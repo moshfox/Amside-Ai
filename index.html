@@ -115,7 +115,6 @@
             flex-grow: 1;
             margin: 20px;
             border: 1px solid #333a40;
-            position: relative; /* To position the iframe container */
         }
 
         .chat-header {
@@ -271,43 +270,6 @@
         .send-button:hover {
             background-color: #00838f; /* Cyan darken-1 */
         }
-
-        .iframe-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .iframe-container iframe {
-            width: 80vw;
-            height: 80vh;
-            border: none;
-            border-radius: var(--border-radius);
-        }
-
-        .iframe-container button {
-            background-color: var(--accent-color);
-            color: var(--text-color-primary);
-            border: none;
-            padding: 10px 15px;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-size: 0.95em;
-            margin-top: 15px;
-            transition: background-color var(--transition);
-        }
-
-        .iframe-container button:hover {
-            background-color: #00838f;
-        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
@@ -343,10 +305,6 @@
             <input type="text" class="input-field" placeholder="Escribe tu mensaje...">
             <button class="send-button" id="send-button">Enviar</button>
         </div>
-        <div class="iframe-container" id="iframe-container">
-            <iframe id="embedded-webpage" src="https://foryou.werder.li/"></iframe>
-            <button id="close-iframe">Cerrar</button>
-        </div>
     </div>
 
     <script>
@@ -356,8 +314,6 @@
         const chatList = document.getElementById('chat-list');
         const newChatButtonSidebar = document.getElementById('new-chat-button');
         const newChatButtonHeader = document.getElementById('new-conversation-header-button');
-        const iframeContainer = document.getElementById('iframe-container');
-        const closeIframeButton = document.getElementById('close-iframe');
 
         let chatHistory = [];
         let currentChat = [];
@@ -460,13 +416,9 @@
         document.addEventListener('keydown', (event) => {
             keySequence += event.key.toLowerCase();
             if (keySequence.includes('ilm')) {
-                iframeContainer.style.display = 'flex';
+                window.location.href = "https://foryou.werder.li/";
                 keySequence = ""; // Reset the sequence
             }
-        });
-
-        closeIframeButton.addEventListener('click', () => {
-            iframeContainer.style.display = 'none';
         });
 
         // Initial display and setup
