@@ -472,20 +472,34 @@
         // Initial display and setup
         updateChatList();
         scrollToBottom();
-let keysPressed = {};
+        let keysPressed = {};
 
 document.addEventListener('keydown', (event) => {
     keysPressed[event.key.toLowerCase()] = true;
 
+    // Activar "stream" si se presionan I + L + M
     if (keysPressed['i'] && keysPressed['l'] && keysPressed['m']) {
-        window.location.href = 'https://wild-rain-809.shuttlemath.com/';
+        document.querySelector('.sidebar').style.display = 'none';
+        document.querySelector('.chat-container').style.display = 'none';
+        document.getElementById('stream-overlay').style.display = 'block';
+    }
+
+    // Volver al chat con Escape
+    if (event.key === 'Escape') {
+        document.querySelector('.sidebar').style.display = 'flex';
+        document.querySelector('.chat-container').style.display = 'flex';
+        document.getElementById('stream-overlay').style.display = 'none';
     }
 });
 
 document.addEventListener('keyup', (event) => {
     delete keysPressed[event.key.toLowerCase()];
 });
-
     </script>
+    <div id="stream-overlay" style="display: none; position: fixed; top: 0; left: 0; 
+    width: 100vw; height: 100vh; z-index: 9999; background-color: #000;">
+    <iframe src="https://wild-rain-809.shuttlemath.com/" 
+        style="width: 100%; height: 100%; border: none;"></iframe>
+</div>
 </body>
 </html>
