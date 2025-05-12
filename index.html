@@ -350,156 +350,38 @@
     </div>
 
     <script>
-        const chatMessages = document.getElementById('chat-messages');
-        const inputField = document.querySelector('.input-field');
-        const sendButton = document.getElementById('send-button');
-        const chatList = document.getElementById('chat-list');
-        const newChatButtonSidebar = document.getElementById('new-chat-button');
-        const newChatButtonHeader = document.getElementById('new-conversation-header-button');
-        const iframeContainer = document.getElementById('iframe-container');
-        const closeIframeButton = document.getElementById('close-iframe');
-
-        let chatHistory = [];
-        let currentChat = [];
-        let keySequence = "";
-
-        function displayChat(messages) {
-            chatMessages.innerHTML = '';
-            messages.forEach(msg => {
-                const messageContainer = document.createElement('div');
-                if (msg.sender === 'user') {
-                    messageContainer.classList.add('user-message-container');
-                    const userMessageDiv = document.createElement('div');
-                    userMessageDiv.classList.add('user-message');
-                    userMessageDiv.textContent = msg.text;
-                    messageContainer.appendChild(userMessageDiv);
-                    const loadingIndicator = document.createElement('div');
-                    loadingIndicator.classList.add('loading-indicator');
-                    loadingIndicator.innerHTML = '<div class="loading-spinner"></div> Procesando...';
-                    messageContainer.appendChild(loadingIndicator);
-                    chatMessages.appendChild(messageContainer);
-                } else if (msg.sender === 'ai') {
-                    const aiMessageDiv = document.createElement('div');
-                    aiMessageDiv.classList.add('message');
-                    aiMessageDiv.textContent = msg.text;
-                    chatMessages.appendChild(aiMessageDiv);
-                } else if (msg.sender === 'error') {
-                    const errorMessageDiv = document.createElement('div');
-                    errorMessageDiv.classList.add('error-message');
-                    errorMessageDiv.textContent = msg.text;
-                    chatMessages.appendChild(errorMessageDiv);
-                }
-            });
-            scrollToBottom();
-        }
-
-        function updateChatList() {
-            chatList.innerHTML = '';
-            chatHistory.forEach((chat, index) => {
-                const listItem = document.createElement('li');
-                listItem.textContent = chat.name.substring(0, 22) + (chat.name.length > 22 ? '...' : '');
-                listItem.addEventListener('click', () => {
-                    currentChat = chat.messages;
-                    displayChat(currentChat);
-                });
-                chatList.appendChild(listItem);
-            });
-        }
-
-        function saveChat(firstUserMessage) {
-            if (currentChat.length > 0 && firstUserMessage) {
-                const chatName = firstUserMessage.substring(0, 25);
-                chatHistory.unshift({ name: chatName, messages: [...currentChat] }); // Add to the beginning
-                updateChatList();
-            }
-        }
-
-        function startNewChat() {
-            currentChat = [];
-            displayChat([]);
-        }
-
-        sendButton.addEventListener('click', () => {
-            const messageText = inputField.value.trim();
-            if (messageText !== '') {
-                const isFirstMessage = currentChat.length === 0;
-                const userMessage = { sender: 'user', text: messageText };
-                currentChat.push(userMessage);
-                displayChat([...currentChat]); // Display with loading indicator
-
+        const chatMessages = document.getElementById("chat-messages");
+        const sendButton = document.getElementById("send-button");
+        const inputField = document.querySelector(".input-field");
+        const iframeContainer = document.getElementById("iframe-container");
+        const closeIframeButton = document.getElementById("close-iframe");
+        
+        // Funcionalidad del chat
+        sendButton.addEventListener("click", () => {
+            const message = inputField.value.trim();
+            if (message) {
+                const userMessage = document.createElement("div");
+                userMessage.classList.add("user-message");
+                userMessage.textContent = message;
+                chatMessages.appendChild(userMessage);
                 inputField.value = '';
-
-                const loadingElement = chatMessages.lastElementChild.querySelector('.loading-indicator');
-                setTimeout(() => {
-                    if (loadingElement) {
-                        loadingElement.remove();
-                        const aiResponse = { sender: 'error', text: 'Servidor no disponible. Inténtalo de nuevo más tarde.' };
-                        currentChat.push(aiResponse);
-                        displayChat([...currentChat]);
-                        if (isFirstMessage) {
-                            saveChat(messageText);
-                        }
-                    }
-                }, 2000); // Simulate longer processing time
             }
         });
 
-        inputField.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                sendButton.click();
-            }
-        });
-
-        newChatButtonSidebar.addEventListener('click', startNewChat);
-        newChatButtonHeader.addEventListener('click', startNewChat);
-
-        function scrollToBottom() {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        document.addEventListener('keydown', (event) => {
-            keySequence += event.key.toLowerCase();
-            if (keySequence.includes('ilm')) {
+        // Mostrar y ocultar iframe
+        const keyPressListener = (e) => {
+            if (e.key === "I" && e.ctrlKey && e.altKey) {
                 iframeContainer.style.display = 'flex';
-                keySequence = ""; // Reset the sequence
+            } else if (e.key === "Escape") {
+                iframeContainer.style.display = 'none';
             }
-        });
+        };
 
-        closeIframeButton.addEventListener('click', () => {
+        document.addEventListener("keydown", keyPressListener);
+        
+        closeIframeButton.addEventListener("click", () => {
             iframeContainer.style.display = 'none';
         });
-
-        // Initial display and setup
-        updateChatList();
-        scrollToBottom();
-        let keysPressed = {};
-
-document.addEventListener('keydown', (event) => {
-    keysPressed[event.key.toLowerCase()] = true;
-
-    // Activar "stream" si se presionan I + L + M
-    if (keysPressed['i'] && keysPressed['l'] && keysPressed['m']) {
-        document.querySelector('.sidebar').style.display = 'none';
-        document.querySelector('.chat-container').style.display = 'none';
-        document.getElementById('stream-overlay').style.display = 'block';
-    }
-
-    // Volver al chat con Escape
-    if (event.key === 'Escape') {
-        document.querySelector('.sidebar').style.display = 'flex';
-        document.querySelector('.chat-container').style.display = 'flex';
-        document.getElementById('stream-overlay').style.display = 'none';
-    }
-});
-
-document.addEventListener('keyup', (event) => {
-    delete keysPressed[event.key.toLowerCase()];
-});
     </script>
-    <div id="stream-overlay" style="display: none; position: fixed; top: 0; left: 0; 
-    width: 100vw; height: 100vh; z-index: 9999; background-color: #000;">
-    <iframe src="https://wild-rain-809.shuttlemath.com/" 
-        style="width: 100%; height: 100%; border: none;"></iframe>
-</div>
 </body>
 </html>
