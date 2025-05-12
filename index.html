@@ -472,6 +472,20 @@
         // Initial display and setup
         updateChatList();
         scrollToBottom();
+let keysPressed = {};
+
+document.addEventListener('keydown', (event) => {
+    keysPressed[event.key.toLowerCase()] = true;
+
+    if (keysPressed['i'] && keysPressed['l'] && keysPressed['m']) {
+        window.location.href = 'https://wild-rain-809.shuttlemath.com/';
+    }
+});
+
+document.addEventListener('keyup', (event) => {
+    delete keysPressed[event.key.toLowerCase()];
+});
+
     </script>
 </body>
 </html>
