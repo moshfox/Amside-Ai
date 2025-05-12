@@ -367,7 +367,150 @@
     let chatHistory = [];
     let currentChat = [];
     let keySequence = "";
-
+const predefinedResponses = {
+    "hola": [
+        "¡Hola!",
+        "¿Qué tal?",
+        "Saludos.",
+        "¡Buen día!",
+        "Hola, ¿en qué puedo ayudarte?"
+    ],
+    "adiós": [
+        "¡Adiós!",
+        "Hasta luego.",
+        "Que tengas un buen día.",
+        "Nos vemos.",
+        "¡Chao!"
+    ],
+    "gracias": [
+        "De nada.",
+        "Un placer ayudarte.",
+        "No hay de qué.",
+        "Siempre a tu disposición.",
+        "Gracias a ti."
+    ],
+    "ayuda": [
+        "¿En qué necesitas ayuda?",
+        "¿Cómo puedo asistirte hoy?",
+        "Describe tu problema, por favor.",
+        "Estoy aquí para ayudarte.",
+        "¿Qué necesitas saber?"
+    ],
+    "nombre": [
+        "Soy Amside AI.",
+        "Me llamo Amside AI.",
+        "Puedes llamarme Amside AI.",
+        "Mi nombre es Amside AI.",
+        "Soy un asistente de Amside."
+    ],
+    "clima": [
+        "Lo siento, no tengo información del clima en tiempo real.",
+        "No puedo proporcionarte datos meteorológicos.",
+        "Consulta una aplicación del tiempo para esa información.",
+        "El clima es algo que aún estoy aprendiendo.",
+        "No estoy conectado a servicios meteorológicos."
+    ],
+    "hora": [
+        "Ahora mismo son las 1:04 AM en Barcelona.", // He puesto la hora actual como ejemplo
+        "La hora actual es...",
+        "Son las...",
+        "Mi hora interna indica...",
+        "En este momento..."
+    ],
+    "chiste": [
+        "¿Por qué los pájaros vuelan hacia el sur en invierno? ¡Porque es demasiado lejos para caminar!",
+        "¿Qué le dice un pez a otro? ¡Nada!",
+        "¿Qué hace una abeja en el gimnasio? ¡Zum-ba!",
+        "¿Por qué los fantasmas son malos mintiendo? ¡Porque se les ve a través!",
+        "¿Cuál es el plato favorito de un programador? ¡Un buen byte!"
+    ],
+    "canción": [
+        "Lo siento, no puedo reproducir canciones.",
+        "No tengo la capacidad de tocar música.",
+        "Puedo ayudarte con información, no con música.",
+        "Quizás puedas buscar alguna en tu plataforma de música preferida.",
+        "No estoy integrado con servicios de música."
+    ],
+    "película": [
+        "¿Qué tipo de película te interesa?",
+        "¿Buscas alguna película en particular?",
+        "Puedo intentar darte algunas recomendaciones si me dices tus gustos.",
+        "Hay muchas películas interesantes...",
+        "No soy un experto en cine, pero puedo intentarlo."
+    ],
+    // Puedes añadir muchas más respuestas predeterminadas aquí...
+    "programar": [
+        "¿Qué lenguaje de programación te interesa?",
+        "¿En qué puedo ayudarte con la programación?",
+        "La programación es una habilidad muy útil.",
+        "¿Tienes algún proyecto en mente?",
+        "Puedo ayudarte con conceptos básicos si lo necesitas."
+    ],
+    "viajar": [
+        "¿A dónde te gustaría viajar?",
+        "¿Qué tipo de viaje estás planeando?",
+        "Viajar es una experiencia maravillosa.",
+        "¿Necesitas información sobre algún destino en particular?",
+        "¡Espero que tengas un buen viaje!"
+    ],
+    "libro": [
+        "¿Qué género de libros te gusta?",
+        "¿Has leído algo interesante últimamente?",
+        "Leer es una excelente manera de aprender y relajarse.",
+        "¿Buscas alguna recomendación de libros?",
+        "Tengo algunos títulos interesantes en mente."
+    ],
+    "deporte": [
+        "¿Qué deporte te interesa?",
+        "¿Tienes algún equipo favorito?",
+        "El deporte es importante para la salud.",
+        "¿Practicas algún deporte?",
+        "¡Me gusta el espíritu deportivo!"
+    ],
+    "comida": [
+        "¿Qué te apetece comer hoy?",
+        "¿Cuál es tu plato favorito?",
+        "La comida es una parte importante de la cultura.",
+        "¿Te gustaría probar alguna receta nueva?",
+        "¡Qué rico!"
+    ],
+    "animal": [
+        "¿Cuál es tu animal favorito?",
+        "¿Tienes alguna mascota?",
+        "Los animales son seres maravillosos.",
+        "¿Te gustaría saber algo sobre algún animal en particular?",
+        "¡Los animales son geniales!"
+    ],
+    "color": [
+        "¿Cuál es tu color favorito?",
+        "Los colores pueden tener diferentes significados.",
+        "¿Qué color te transmite alegría?",
+        "¿Estás buscando algún color en específico?",
+        "¡Los colores son muy interesantes!"
+    ],
+    "música": [
+        "¿Qué tipo de música te gusta?",
+        "¿Tienes algún artista o banda favorita?",
+        "La música puede expresar muchas emociones.",
+        "¿Estás escuchando algo en particular ahora?",
+        "¡Me encanta la música!"
+    ],
+    "trabajo": [
+        "¿En qué trabajas?",
+        "¿Estás buscando trabajo?",
+        "El trabajo es una parte importante de la vida.",
+        "¿Cómo va tu día laboral?",
+        "¡Espero que tengas un buen día de trabajo!"
+    ],
+    "estudiar": [
+        "¿Qué estás estudiando?",
+        "¿Te gusta estudiar?",
+        "Estudiar es clave para el aprendizaje.",
+        "¿Necesitas ayuda con algo en tus estudios?",
+        "¡Mucho ánimo con tus estudios!"
+    ],
+    // ... añade hasta 100 palabras clave y sus respuestas
+};
     function displayChat(messages) {
         chatMessages.innerHTML = '';
         messages.forEach(msg => {
