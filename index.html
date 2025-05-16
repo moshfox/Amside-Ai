@@ -54,24 +54,24 @@ const botonMax = document.getElementById("botonMax");
 
 textoBusqueda.addEventListener("keypress", function(event) {
   if (event.key === "Enter") {
-    event.preventDefault(); // Evita la acción predeterminada del Enter (como enviar un formulario)
-    botonMax.click(); // Simula un clic en el botón "Max"
+    event.preventDefault();
+    botonMax.click();
   }
 });
 
 function abrirPestanas() {
   const texto = textoBusqueda.value;
   if (!texto.startsWith("<")) {
-    alert("Error: Debe comenzar con el carácter '<' para activar la función.");
+    alert("La web se encuentra actualmente en fase demo o pruebas y algunas funcionalidades aún no están completas.");
     return;
   }
 
-  if (texto.trim().length <= 1) { // Comprueba si solo está el '<' o está vacío después de quitar espacios
+  if (texto.trim().length <= 1) {
     alert("Por favor, escribe algo después del '<'.");
     return;
   }
 
-  const textoParaBuscar = texto.substring(1); // Elimina el primer carácter '<' para la búsqueda
+  const textoParaBuscar = texto.substring(1);
 
   const variaciones = [
     "",
@@ -86,7 +86,7 @@ function abrirPestanas() {
     "!",
     "?",
     " ",
-    "%20", // Espacio codificado para URL
+    "%20",
     "+",
     "&",
     "$",
