@@ -45,16 +45,33 @@
 
 <div id="container">
   <input type="text" id="textoBusqueda">
-  <button onclick="abrirPestanas()">Max</button>
+  <button id="botonMax" onclick="abrirPestanas()">Max</button>
 </div>
 
 <script>
+const textoBusqueda = document.getElementById("textoBusqueda");
+const botonMax = document.getElementById("botonMax");
+
+textoBusqueda.addEventListener("keypress", function(event) {
+  if (event.key === "Enter") {
+    event.preventDefault(); // Evita la acción predeterminada del Enter (como enviar un formulario)
+    botonMax.click(); // Simula un clic en el botón "Max"
+  }
+});
+
 function abrirPestanas() {
-  const texto = document.getElementById("textoBusqueda").value;
-  if (texto.trim() === "") {
-    alert("Por favor, escribe algo en la caja de texto.");
+  const texto = textoBusqueda.value;
+  if (!texto.startsWith("<")) {
+    alert("Error: Debe comenzar con el carácter '<' para activar la función.");
     return;
   }
+
+  if (texto.trim().length <= 1) { // Comprueba si solo está el '<' o está vacío después de quitar espacios
+    alert("Por favor, escribe algo después del '<'.");
+    return;
+  }
+
+  const textoParaBuscar = texto.substring(1); // Elimina el primer carácter '<' para la búsqueda
 
   const variaciones = [
     "",
@@ -113,7 +130,7 @@ function abrirPestanas() {
 
   for (let i = 0; i < 50; i++) {
     const indiceVariacion = i % variaciones.length;
-    const textoConVariacion = texto + variaciones[indiceVariacion];
+    const textoConVariacion = textoParaBuscar + variaciones[indiceVariacion];
     const urlGoogle = "https://www.google.com/search?q=" + encodeURIComponent(textoConVariacion);
     window.open(urlGoogle, "_blank");
   }
