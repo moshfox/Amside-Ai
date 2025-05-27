@@ -321,7 +321,7 @@
 
         // URL del modelo de Hugging Face Inference API
         // deepseek-ai/DeepSeek-R1-Distill-Qwen-32B suele ser un buen candidato por API.
-        const MODEL_URL = "https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B";
+        const MODEL_URL = "https://https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"; // CAMBIO AQUÍ: Asegúrate de que no haya doble 'https://'
         // Si quieres probar específicamente Falcon-H1-1.5B-Deep-Instruct, sería:
         // const MODEL_URL = "https://api-inference.huggingface.co/models/tiiuae/Falcon-H1-1.5B-Deep-Instruct";
         // Ten en cuenta que los modelos muy grandes pueden ser más lentos o dar errores en la API de inferencia gratuita.
@@ -510,14 +510,23 @@
         }
 
         // Event Listeners
-        sendButton.addEventListener('click', sendMessage);
-        userInputField.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        });
-        newChatButtonSidebar.addEventListener('click', startNewChat);
-        newChatButtonHeader.addEventListener('click', startNewChat);
+        // Se asegura que los elementos existan antes de añadir el listener
+        if (sendButton) {
+            sendButton.addEventListener('click', sendMessage);
+        }
+        if (userInputField) {
+            userInputField.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        }
+        if (newChatButtonSidebar) {
+            newChatButtonSidebar.addEventListener('click', startNewChat);
+        }
+        if (newChatButtonHeader) {
+            newChatButtonHeader.addEventListener('click', startNewChat);
+        }
 
         function scrollToBottom() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
