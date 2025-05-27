@@ -208,14 +208,13 @@
         }
 
         .loading-indicator {
-            display: flex;
+            display: flex; /* Cambiado a flex para que el spinner y el texto estén en línea */
             align-self: flex-end; /* Para que esté alineado con el mensaje del usuario */
             margin-top: 5px;
             align-items: center;
             font-size: 0.8em;
             color: var(--text-color-secondary);
-            /* Ocultar por defecto */
-            display: none;
+            display: none; /* Oculto por defecto */
         }
 
         .loading-spinner {
@@ -225,7 +224,7 @@
             width: 14px;
             height: 14px;
             animation: spin 1s linear infinite;
-            margin-left: 6px;
+            margin-right: 6px; /* Añadido margen para separar del texto */
         }
 
         @keyframes spin {
@@ -314,39 +313,47 @@
     </div>
 
     <script>
-     .
-        const HUGGINGFACE_API_TOKEN = "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";
+        // --- ¡¡¡ADVERTENCIA DE SEGURIDAD EXTREMA!!! ---
+        // ESTE TOKEN SERÁ PÚBLICO EN TU CÓDIGO FUENTE DE GITHUB PAGES.
+        // CUALQUIERA PUEDE COPIARLO Y USARLO.
+        // SOLO UTILIZA ESTO PARA DEMOSTRACIONES RÁPIDAS O USO PERSONAL Y NO SENSIBLE.
+        const HUGGINGFACE_API_TOKEN = "hf_TU_TOKEN_REAL_AQUI"; // <-- ¡¡REEMPLAZA ESTO CON TU TOKEN REAL!!
 
+        // URL del modelo de Hugging Face Inference API
+        // deepseek-ai/DeepSeek-R1-Distill-Qwen-32B suele ser un buen candidato por API.
         const MODEL_URL = "https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B";
-        
-    
+        // Si quieres probar específicamente Falcon-H1-1.5B-Deep-Instruct, sería:
+        // const MODEL_URL = "https://api-inference.huggingface.co/models/tiiuae/Falcon-H1-1.5B-Deep-Instruct";
+        // Ten en cuenta que los modelos muy grandes pueden ser más lentos o dar errores en la API de inferencia gratuita.
+
+        // Referencias a los elementos del DOM
         const chatMessages = document.getElementById('chat-messages');
-        const userInputField = document.getElementById('user-input'); // Usando el ID que ya tenías
+        const userInputField = document.getElementById('user-input'); // ¡Ahora sí existe este ID!
         const sendButton = document.getElementById('send-button');
         const chatList = document.getElementById('chat-list');
         const newChatButtonSidebar = document.getElementById('new-chat-button');
         const newChatButtonHeader = document.getElementById('new-conversation-header-button');
-        const loadingIndicator = document.getElementById('loading-indicator'); // El elemento del indicador de carga
+        const loadingIndicator = document.getElementById('loading-indicator');
 
-        // Almacena el historial de la conversación en un formato compatible con ChatML (role: user/assistant/system, content: "...")
-        // Esto es lo que la API de Hugging Face espera.
+        // Almacena mensajes en formato ChatML { role: "user/assistant/system", content: "..." }
         let currentChatMessages = []; // Mensajes de la conversación actual
         let chatHistory = []; // Para guardar múltiples conversaciones en la lista de la izquierda
 
         // Función para añadir un mensaje visualmente al chat
-        function addMessageToChat(messageText, senderType) {
+        // Parámetros: role ('user', 'assistant', 'error'), content (el texto del mensaje)
+        function addMessageToChat(role, content) {
             const messageContainer = document.createElement('div');
-            let messageDiv = document.createElement('div');
+            const messageDiv = document.createElement('div');
 
-            if (senderType === 'user') {
+            if (role === 'user') {
                 messageContainer.classList.add('user-message-container');
                 messageDiv.classList.add('user-message');
-            } else if (senderType === 'ai') {
+            } else if (role === 'assistant') {
                 messageDiv.classList.add('message');
-            } else if (senderType === 'error') {
+            } else if (role === 'error') {
                 messageDiv.classList.add('error-message');
             }
-            messageDiv.textContent = messageText;
+            messageDiv.textContent = content;
             messageContainer.appendChild(messageDiv);
             chatMessages.appendChild(messageContainer);
             scrollToBottom();
@@ -356,16 +363,12 @@
         function displayChat(messages) {
             chatMessages.innerHTML = ''; // Limpiar el chat actual
             messages.forEach(msg => {
-                if (msg.role === 'user') {
-                    addMessageToChat(msg.content, 'user');
-                } else if (msg.role === 'assistant') {
-                    addMessageToChat(msg.content, 'ai');
-                } else if (msg.role === 'system') {
-                    // El mensaje de sistema no se muestra en el chat, solo se usa para la IA
-                } else {
-                    addMessageToChat(msg.content, 'error'); // Por si acaso hay un tipo de mensaje desconocido
+                // Solo mostrar mensajes de 'user', 'assistant' o 'error'. 'system' es para la IA.
+                if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'error') {
+                    addMessageToChat(msg.role, msg.content);
                 }
             });
+            scrollToBottom();
         }
 
         // Función para añadir la conversación actual a la lista de historial
@@ -373,7 +376,7 @@
             chatList.innerHTML = ''; // Limpiar la lista
             chatHistory.forEach((chat, index) => {
                 const listItem = document.createElement('li');
-                // Tomar el primer mensaje del usuario para el nombre del chat
+                // Tomar el contenido del primer mensaje del usuario para el nombre del chat
                 const firstUserMessage = chat.messages.find(msg => msg.role === 'user');
                 listItem.textContent = firstUserMessage ? firstUserMessage.content.substring(0, 22) + (firstUserMessage.content.length > 22 ? '...' : '') : 'Nueva Conversación';
                 listItem.addEventListener('click', () => {
@@ -384,34 +387,57 @@
             });
         }
 
+        // Función para guardar el chat en el historial
+        function saveChat(firstUserMessageContent) {
+            // Asegurarse de que el chat tenga mensajes reales (más allá del mensaje de bienvenida)
+            if (currentChatMessages.length > 1) {
+                // Prevenir guardar el mismo chat múltiples veces
+                const isChatAlreadySaved = chatHistory.some(chat => chat.messages === currentChatMessages);
+                if (!isChatAlreadySaved) {
+                    const chatName = firstUserMessageContent.substring(0, 25);
+                    chatHistory.unshift({ name: chatName, messages: currentChatMessages }); // Añadir al principio
+                    updateChatList();
+                }
+            }
+        }
+
         // Función para iniciar una nueva conversación
         function startNewChat() {
-            // Guardar la conversación actual si no está vacía y es la primera vez que se inicia
-            if (currentChatMessages.length > 1) { // Si hay más que el mensaje de bienvenida
+            // Guardar la conversación actual antes de iniciar una nueva, si tiene contenido
+            if (currentChatMessages.length > 1) {
                  const firstUserMessage = currentChatMessages.find(msg => msg.role === 'user');
                  if (firstUserMessage) {
-                    // Prevenir duplicados si ya fue guardado
-                    const isChatSaved = chatHistory.some(chat => chat.messages === currentChatMessages);
-                    if (!isChatSaved) {
-                        chatHistory.unshift({ name: firstUserMessage.content.substring(0, 25), messages: [...currentChatMessages] });
-                        updateChatList();
-                    }
+                    saveChat(firstUserMessage.content);
                  }
             }
+            // Reiniciar currentChatMessages con el mensaje de bienvenida de la IA
             currentChatMessages = [
                 { role: 'assistant', content: 'Bienvenido a Amside AI. Estoy aquí para ayudarte. ¿Qué te gustaría saber?' }
             ];
             displayChat(currentChatMessages);
         }
 
+        // Mostrar/ocultar indicador de carga
+        function showLoadingIndicator() {
+            if (loadingIndicator) loadingIndicator.style.display = 'flex'; // Usar 'flex' para que el spinner y texto se alineen
+            sendButton.disabled = true; // Deshabilitar botón mientras carga
+            userInputField.disabled = true; // Deshabilitar input
+        }
+
+        function hideLoadingIndicator() {
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
+            sendButton.disabled = false; // Habilitar botón
+            userInputField.disabled = false; // Habilitar input
+            userInputField.focus(); // Poner el foco de nuevo en el input
+        }
 
         // Función para enviar mensaje a la IA
         async function sendMessage() {
             const userInput = userInputField.value.trim();
             if (userInput === "") return;
 
-            // Añadir mensaje del usuario al chat y al historial
-            addMessageToChat(userInput, 'user');
+            // Añadir mensaje del usuario a la UI y al historial de mensajes
+            addMessageToChat('user', userInput);
             currentChatMessages.push({ role: 'user', content: userInput });
             userInputField.value = ""; // Limpiar el input
 
@@ -419,7 +445,7 @@
 
             try {
                 // Mensaje de sistema para darle personalidad a la IA
-                const systemMessage = (
+                const systemMessageContent = (
                     "Eres Amside AI, una inteligencia artificial creada por Hodelygil. "
                     "Tu propósito principal es asistir en el estudio y el aprendizaje, "
                     "proporcionando información y explicaciones detalladas. "
@@ -427,10 +453,11 @@
                     "Responde de manera informativa y útil, pero con un tono conversacional."
                 );
 
-                // Construir el array de mensajes para la API, incluyendo el mensaje de sistema
+                // Construir el array de mensajes para la API
+                // Esto incluye el mensaje de sistema al inicio, seguido de la conversación actual.
                 const messagesForAPI = [
-                    { "role": "system", "content": systemMessage },
-                    ...currentChatMessages // Añadir todo el historial, incluyendo el último mensaje del usuario
+                    { "role": "system", "content": systemMessageContent },
+                    ...currentChatMessages.filter(msg => msg.role !== 'system') // No enviar mensajes de sistema duplicados al history
                 ];
 
                 const payload = {
@@ -465,33 +492,20 @@
                 // La respuesta de la API de inferencia es un array, el texto generado está en el primer elemento
                 const aiResponseText = data[0].generated_text;
 
-                addMessageToChat(aiResponseText, 'ai');
-                currentChatMessages.push({ role: 'assistant', content: aiResponseText }); // Añadir respuesta al historial
+                addMessageToChat('assistant', aiResponseText); // Añadir respuesta de la IA a la UI
+                currentChatMessages.push({ role: 'assistant', content: aiResponseText }); // Añadir al historial para futuras interacciones
 
-                // Si es la primera interacción real en un chat nuevo, lo guardamos
-                if (currentChatMessages.length === 3 && currentChatMessages[0].role === 'assistant') { // Bienvenida, user, ai
-                    saveChat(userInput); // Guardar el chat con el primer mensaje del usuario como nombre
+                // Guardar el chat si es la primera interacción real en esta conversación
+                if (currentChatMessages.length === 2 && currentChatMessages[0].role === 'user') { // Primer mensaje de usuario + primera respuesta de IA
+                    saveChat(userInput);
                 }
 
             } catch (error) {
                 console.error("Error al obtener respuesta de la IA:", error);
-                addMessageToChat(`Lo siento, no pude obtener una respuesta. Error: ${error.message}`, 'error');
+                addMessageToChat('error', `Lo siento, no pude obtener una respuesta. Error: ${error.message}`);
+                // No añadimos el error a currentChatMessages si no queremos que la IA lo "vea" en futuras interacciones.
             } finally {
                 hideLoadingIndicator(); // Ocultar el indicador de carga
-            }
-        }
-
-        // Función para guardar el chat en el historial
-        function saveChat(firstUserMessage) {
-            // Asegurarse de que el chat no esté ya guardado y tenga contenido relevante
-            if (currentChatMessages.length > 1) { // Ignorar solo el mensaje de bienvenida
-                const chatName = firstUserMessage.substring(0, 25);
-                // Si el chat actual no está ya en el historial (por referencia)
-                const isChatAlreadySaved = chatHistory.some(chat => chat.messages === currentChatMessages);
-                if (!isChatAlreadySaved) {
-                    chatHistory.unshift({ name: chatName, messages: currentChatMessages }); // Añadir al principio
-                    updateChatList();
-                }
             }
         }
 
@@ -505,14 +519,13 @@
         newChatButtonSidebar.addEventListener('click', startNewChat);
         newChatButtonHeader.addEventListener('click', startNewChat);
 
-
         function scrollToBottom() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         // Inicializar al cargar la página
-        startNewChat();
-        updateChatList(); // Para asegurar que la lista de chats está vacía o inicializada
+        startNewChat(); // Empieza una nueva conversación con el mensaje de bienvenida
+        updateChatList(); // Inicializa la lista de chats (vacía al principio)
     </script>
 </body>
 </html>
