@@ -321,11 +321,8 @@
 
         // URL del modelo de Hugging Face Inference API
         // deepseek-ai/DeepSeek-R1-Distill-Qwen-32B suele ser un buen candidato por API.
-        const MODEL_URL = "https://https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"; // CAMBIO AQUÍ: Asegúrate de que no haya doble 'https://'
+        const MODEL_URL = "https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B";
         // Si quieres probar específicamente Falcon-H1-1.5B-Deep-Instruct, sería:
-        // const MODEL_URL = "https://api-inference.huggingface.co/models/tiiuae/Falcon-H1-1.5B-Deep-Instruct";
-        // Ten en cuenta que los modelos muy grandes pueden ser más lentos o dar errores en la API de inferencia gratuita.
-
         // Referencias a los elementos del DOM
         const chatMessages = document.getElementById('chat-messages');
         const userInputField = document.getElementById('user-input'); // ¡Ahora sí existe este ID!
