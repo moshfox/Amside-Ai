@@ -1,141 +1,526 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<title>kendrick lamar</title>
-<style>
-  body {
-    font-family: sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #f0f0f0;
-    margin: 0;
-  }
-  #container {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    text-align: center;
-  }
-  input[type="text"] {
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-  }
-  button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-  }
-  button:hover {
-    background-color: #0056b3;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amside AI - Interfaz con IA Real</title>
+    <style>
+        :root {
+            --primary-color: #22272b; /* Dark Background */
+            --secondary-color: #37404a; /* Darker Grey */
+            --accent-color: #00bcd4; /* Cyan */
+            --text-color-primary: #eee;
+            --text-color-secondary: #ccc;
+            --error-color: #f44336; /* Red accent */
+            --border-radius: 8px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s ease-in-out;
+            --sidebar-width: 300px;
+            /* Variable para el color cian en RGB, útil para box-shadow con rgba */
+            --accent-color-rgb: 0, 188, 212;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: var(--primary-color);
+            color: var(--text-color-primary);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .sidebar {
+            background-color: var(--secondary-color);
+            width: var(--sidebar-width);
+            border-right: 1px solid #444d57;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            color: var(--text-color-primary);
+            margin-bottom: 30px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 400;
+        }
+
+        .new-chat-button {
+            background-color: var(--accent-color);
+            color: var(--text-color-primary);
+            border: none;
+            padding: 12px 18px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1em;
+            margin-bottom: 20px;
+            transition: background-color var(--transition);
+            width: 100%;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .new-chat-button svg {
+            margin-right: 10px;
+        }
+
+        .chat-list-title {
+            font-size: 0.9em;
+            color: var(--text-color-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .chat-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+        }
+
+        .chat-list li {
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 6px;
+            cursor: pointer;
+            background-color: #2c343c;
+            color: var(--text-color-secondary);
+            transition: background-color var(--transition), color var(--transition);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chat-list li:hover {
+            background-color: var(--accent-color);
+            color: var(--text-color-primary);
+        }
+
+        .chat-container {
+            background-color: var(--primary-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-grow: 1;
+            margin: 20px;
+            border: 1px solid #333a40;
+        }
+
+        .chat-header {
+            background-color: var(--secondary-color);
+            color: var(--text-color-primary);
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #444d57;
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-header button {
+            background: none;
+            border: none;
+            color: var(--text-color-primary);
+            font-size: 1em;
+            cursor: pointer;
+            margin-right: 20px;
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            transition: background-color var(--transition);
+        }
+
+        .chat-header button:hover {
+            background-color: #444d57;
+        }
+
+        .chat-header h2 {
+            margin: 0;
+            font-size: 1.4em;
+            font-weight: 400;
+        }
+
+        .chat-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            background-color: #2c343c;
+            color: var(--text-color-secondary);
+            border-radius: var(--border-radius);
+            padding: 10px 14px;
+            word-break: break-word;
+            align-self: flex-start;
+            max-width: 80%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            font-size: 0.95em;
+        }
+
+        .error-message {
+            background-color: #422b2b;
+            color: var(--error-color);
+            border-radius: var(--border-radius);
+            padding: 10px 14px;
+            word-break: break-word;
+            align-self: flex-start;
+            max-width: 80%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            font-size: 0.95em;
+            border: 1px solid #5a3232;
+        }
+
+        .user-message-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            max-width: 80%;
+            align-self: flex-end;
+        }
+
+        .user-message {
+            background-color: var(--accent-color);
+            color: var(--text-color-primary);
+            border-radius: var(--border-radius);
+            padding: 10px 14px;
+            word-break: break-word;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            font-size: 0.95em;
+            margin-bottom: 5px;
+        }
+
+        .loading-indicator {
+            display: flex;
+            align-self: flex-end; /* Para que esté alineado con el mensaje del usuario */
+            margin-top: 5px;
+            align-items: center;
+            font-size: 0.8em;
+            color: var(--text-color-secondary);
+            /* Ocultar por defecto */
+            display: none;
+        }
+
+        .loading-spinner {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid var(--accent-color);
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 1s linear infinite;
+            margin-left: 6px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .input-area {
+            padding: 15px;
+            border-top: 1px solid #444d57;
+            display: flex;
+            align-items: center;
+            background-color: var(--secondary-color);
+            border-bottom-left-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+        }
+
+        .input-field {
+            flex-grow: 1;
+            padding: 10px 12px;
+            border: 1px solid #555e68;
+            border-radius: var(--border-radius);
+            margin-right: 10px;
+            font-size: 0.95em;
+            color: var(--text-color-primary);
+            background-color: #2c343c;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 1px 3px rgba(var(--accent-color-rgb), 0.2);
+        }
+
+        .send-button {
+            background-color: var(--accent-color);
+            color: var(--text-color-primary);
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background-color var(--transition);
+        }
+
+        .send-button:hover {
+            background-color: #00838f; /* Cyan darken-1 */
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Amside AI</h2>
+        </div>
+        <button class="new-chat-button" id="new-chat-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square-fill" viewBox="0 0 16 16">
+                <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"/>
+            </svg>
+            Nueva Conversación
+        </button>
+        <h3 class="chat-list-title">Historial</h3>
+        <ul class="chat-list" id="chat-list">
+            </ul>
+    </div>
+    <div class="chat-container">
+        <div class="chat-header">
+            <button id="new-conversation-header-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square-fill" viewBox="0 0 16 16">
+                    <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"/>
+                </svg>
+                Nuevo
+            </button>
+            <h2>Chat</h2>
+        </div>
+        <div class="chat-body" id="chat-messages">
+            </div>
+        <div class="input-area">
+            <input type="text" class="input-field" id="user-input" placeholder="Escribe tu mensaje...">
+            <button class="send-button" id="send-button">Enviar</button>
+            <div id="loading-indicator" class="loading-indicator">
+                <div class="loading-spinner"></div> Procesando...
+            </div>
+        </div>
+    </div>
 
-<div id="container">
-  <input type="text" id="textoBusqueda">
-  <button id="botonMax" onclick="abrirPestanas()">Max</button>
-</div>
+    <script>
+        // --- ¡¡¡ADVERTENCIA DE SEGURIDAD EXTREMA!!! ---
+        // ESTE TOKEN SERÁ PÚBLICO EN TU CÓDIGO FUENTE DE GITHUB PAGES.
+        // CUALQUIERA PUEDE COPIARLO Y USARLO.
+        // SOLO UTILIZA ESTO PARA DEMOSTRACIONES RÁPIDAS O USO PERSONAL Y NO SENSIBLE.
+        const HUGGINGFACE_API_TOKEN = "hf_TU_TOKEN_REAL_AQUI"; // <-- ¡¡REEMPLAZA ESTO CON TU TOKEN REAL!!
 
-<script>
-const textoBusqueda = document.getElementById("textoBusqueda");
-const botonMax = document.getElementById("botonMax");
+        // URL del modelo de Hugging Face Inference API
+        // deepseek-ai/DeepSeek-R1-Distill-Qwen-32B suele ser un buen candidato por API.
+        const MODEL_URL = "https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B";
+        // Si quieres probar específicamente Falcon-H1-1.5B-Deep-Instruct, sería:
+        // const MODEL_URL = "https://api-inference.huggingface.co/models/tiiuae/Falcon-H1-1.5B-Deep-Instruct";
+        // Ten en cuenta que los modelos muy grandes pueden ser más lentos o dar errores en la API de inferencia gratuita.
 
-textoBusqueda.addEventListener("keypress", function(event) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    botonMax.click();
-  }
-});
+        // Referencias a los elementos del DOM (asegúrate que los IDs/clases HTML coincidan)
+        const chatMessages = document.getElementById('chat-messages');
+        const userInputField = document.getElementById('user-input'); // Usando el ID que ya tenías
+        const sendButton = document.getElementById('send-button');
+        const chatList = document.getElementById('chat-list');
+        const newChatButtonSidebar = document.getElementById('new-chat-button');
+        const newChatButtonHeader = document.getElementById('new-conversation-header-button');
+        const loadingIndicator = document.getElementById('loading-indicator'); // El elemento del indicador de carga
 
-function abrirPestanas() {
-  const texto = textoBusqueda.value;
-  if (!texto.startsWith("<")) {
-    alert("La web se encuentra actualmente en fase demo o pruebas y algunas funcionalidades aún no están completas.");
-    return;
-  }
+        // Almacena el historial de la conversación en un formato compatible con ChatML (role: user/assistant/system, content: "...")
+        // Esto es lo que la API de Hugging Face espera.
+        let currentChatMessages = []; // Mensajes de la conversación actual
+        let chatHistory = []; // Para guardar múltiples conversaciones en la lista de la izquierda
 
-  if (texto.trim().length <= 1) {
-    alert("Por favor, escribe algo después del '<'.");
-    return;
-  }
+        // Función para añadir un mensaje visualmente al chat
+        function addMessageToChat(messageText, senderType) {
+            const messageContainer = document.createElement('div');
+            let messageDiv = document.createElement('div');
 
-  const textoParaBuscar = texto.substring(1);
+            if (senderType === 'user') {
+                messageContainer.classList.add('user-message-container');
+                messageDiv.classList.add('user-message');
+            } else if (senderType === 'ai') {
+                messageDiv.classList.add('message');
+            } else if (senderType === 'error') {
+                messageDiv.classList.add('error-message');
+            }
+            messageDiv.textContent = messageText;
+            messageContainer.appendChild(messageDiv);
+            chatMessages.appendChild(messageContainer);
+            scrollToBottom();
+        }
 
-  const variaciones = [
-    "",
-    ".",
-    "-",
-    "3",
-    "_",
-    "a",
-    "b",
-    "1",
-    "2",
-    "!",
-    "?",
-    " ",
-    "%20",
-    "+",
-    "&",
-    "$",
-    "#",
-    "@",
-    "*",
-    "(",
-    ")",
-    "[",
-    "]",
-    "{",
-    "}",
-    ",",
-    ";",
-    ":",
-    "'",
-    '"',
-    "/",
-    "\\",
-    "<",
-    ">",
-    "€",
-    "£",
-    "¥",
-    "₪",
-    "₹",
-    "₩",
-    "₱",
-    "฿",
-    "₫",
-    "₡",
-    "₵",
-    "₲",
-    "₸",
-    "₺",
-    "₴",
-    "元",
-    "円",
-    "원"
-  ];
+        // Función para mostrar un chat completo (ej. al cargar uno del historial)
+        function displayChat(messages) {
+            chatMessages.innerHTML = ''; // Limpiar el chat actual
+            messages.forEach(msg => {
+                if (msg.role === 'user') {
+                    addMessageToChat(msg.content, 'user');
+                } else if (msg.role === 'assistant') {
+                    addMessageToChat(msg.content, 'ai');
+                } else if (msg.role === 'system') {
+                    // El mensaje de sistema no se muestra en el chat, solo se usa para la IA
+                } else {
+                    addMessageToChat(msg.content, 'error'); // Por si acaso hay un tipo de mensaje desconocido
+                }
+            });
+        }
 
-  for (let i = 0; i < 50; i++) {
-    const indiceVariacion = i % variaciones.length;
-    const textoConVariacion = textoParaBuscar + variaciones[indiceVariacion];
-    const urlGoogle = "https://www.google.com/search?q=" + encodeURIComponent(textoConVariacion);
-    window.open(urlGoogle, "_blank");
-  }
-}
-</script>
+        // Función para añadir la conversación actual a la lista de historial
+        function updateChatList() {
+            chatList.innerHTML = ''; // Limpiar la lista
+            chatHistory.forEach((chat, index) => {
+                const listItem = document.createElement('li');
+                // Tomar el primer mensaje del usuario para el nombre del chat
+                const firstUserMessage = chat.messages.find(msg => msg.role === 'user');
+                listItem.textContent = firstUserMessage ? firstUserMessage.content.substring(0, 22) + (firstUserMessage.content.length > 22 ? '...' : '') : 'Nueva Conversación';
+                listItem.addEventListener('click', () => {
+                    currentChatMessages = chat.messages; // Cargar el historial completo
+                    displayChat(currentChatMessages); // Mostrarlo en el chat
+                });
+                chatList.appendChild(listItem);
+            });
+        }
 
+        // Función para iniciar una nueva conversación
+        function startNewChat() {
+            // Guardar la conversación actual si no está vacía y es la primera vez que se inicia
+            if (currentChatMessages.length > 1) { // Si hay más que el mensaje de bienvenida
+                 const firstUserMessage = currentChatMessages.find(msg => msg.role === 'user');
+                 if (firstUserMessage) {
+                    // Prevenir duplicados si ya fue guardado
+                    const isChatSaved = chatHistory.some(chat => chat.messages === currentChatMessages);
+                    if (!isChatSaved) {
+                        chatHistory.unshift({ name: firstUserMessage.content.substring(0, 25), messages: [...currentChatMessages] });
+                        updateChatList();
+                    }
+                 }
+            }
+            currentChatMessages = [
+                { role: 'assistant', content: 'Bienvenido a Amside AI. Estoy aquí para ayudarte. ¿Qué te gustaría saber?' }
+            ];
+            displayChat(currentChatMessages);
+        }
+
+
+        // Función para enviar mensaje a la IA
+        async function sendMessage() {
+            const userInput = userInputField.value.trim();
+            if (userInput === "") return;
+
+            // Añadir mensaje del usuario al chat y al historial
+            addMessageToChat(userInput, 'user');
+            currentChatMessages.push({ role: 'user', content: userInput });
+            userInputField.value = ""; // Limpiar el input
+
+            showLoadingIndicator(); // Mostrar el indicador de carga
+
+            try {
+                // Mensaje de sistema para darle personalidad a la IA
+                const systemMessage = (
+                    "Eres Amside AI, una inteligencia artificial creada por Hodelygil. "
+                    "Tu propósito principal es asistir en el estudio y el aprendizaje, "
+                    "proporcionando información y explicaciones detalladas. "
+                    "Sin embargo, también eres amigable y puedes mantener conversaciones informales y agradables. "
+                    "Responde de manera informativa y útil, pero con un tono conversacional."
+                );
+
+                // Construir el array de mensajes para la API, incluyendo el mensaje de sistema
+                const messagesForAPI = [
+                    { "role": "system", "content": systemMessage },
+                    ...currentChatMessages // Añadir todo el historial, incluyendo el último mensaje del usuario
+                ];
+
+                const payload = {
+                    "inputs": messagesForAPI, // Esto es el array de objetos {role, content}
+                    "parameters": {
+                        "max_new_tokens": 500,
+                        "do_sample": true,
+                        "temperature": 0.7,
+                        "top_p": 0.9,
+                        "repetition_penalty": 1.1,
+                        "return_full_text": false // Queremos solo la nueva generación del modelo
+                    }
+                };
+
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${HUGGINGFACE_API_TOKEN}`
+                };
+
+                const response = await fetch(MODEL_URL, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Error HTTP: ${response.status} - ${JSON.stringify(errorData)}`);
+                }
+
+                const data = await response.json();
+                // La respuesta de la API de inferencia es un array, el texto generado está en el primer elemento
+                const aiResponseText = data[0].generated_text;
+
+                addMessageToChat(aiResponseText, 'ai');
+                currentChatMessages.push({ role: 'assistant', content: aiResponseText }); // Añadir respuesta al historial
+
+                // Si es la primera interacción real en un chat nuevo, lo guardamos
+                if (currentChatMessages.length === 3 && currentChatMessages[0].role === 'assistant') { // Bienvenida, user, ai
+                    saveChat(userInput); // Guardar el chat con el primer mensaje del usuario como nombre
+                }
+
+            } catch (error) {
+                console.error("Error al obtener respuesta de la IA:", error);
+                addMessageToChat(`Lo siento, no pude obtener una respuesta. Error: ${error.message}`, 'error');
+            } finally {
+                hideLoadingIndicator(); // Ocultar el indicador de carga
+            }
+        }
+
+        // Función para guardar el chat en el historial
+        function saveChat(firstUserMessage) {
+            // Asegurarse de que el chat no esté ya guardado y tenga contenido relevante
+            if (currentChatMessages.length > 1) { // Ignorar solo el mensaje de bienvenida
+                const chatName = firstUserMessage.substring(0, 25);
+                // Si el chat actual no está ya en el historial (por referencia)
+                const isChatAlreadySaved = chatHistory.some(chat => chat.messages === currentChatMessages);
+                if (!isChatAlreadySaved) {
+                    chatHistory.unshift({ name: chatName, messages: currentChatMessages }); // Añadir al principio
+                    updateChatList();
+                }
+            }
+        }
+
+        // Event Listeners
+        sendButton.addEventListener('click', sendMessage);
+        userInputField.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        newChatButtonSidebar.addEventListener('click', startNewChat);
+        newChatButtonHeader.addEventListener('click', startNewChat);
+
+
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Inicializar al cargar la página
+        startNewChat();
+        updateChatList(); // Para asegurar que la lista de chats está vacía o inicializada
+    </script>
 </body>
 </html>
