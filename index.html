@@ -439,10 +439,15 @@
             position: relative; /* Para el z-index */
             z-index: 20; /* Asegura que esté por encima del welcome-screen y input centrado */
             /* Valores por defecto para cuando está abajo (fila) */
-            flex-direction: row; /* Importante: resetear a fila */
-            gap: initial; /* Importante: resetear el espacio */
-            width: auto; /* Importante: resetear el ancho */
-            max-width: none; /* Importante: resetear el max-width */
+            flex-direction: row; 
+            gap: initial; 
+            width: auto; 
+            max-width: none; 
+            box-shadow: none; /* Restablecer sombra cuando no está centrado */
+            border: none; /* Restablecer borde cuando no está centrado */
+            background-color: var(--secondary-color); /* Restablecer fondo cuando no está centrado */
+            padding: 15px; /* Restablecer padding cuando no está centrado */
+            transition: all 0.5s ease; /* Asegurar la transición */
         }
 
         .input-field {
@@ -587,8 +592,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 80%; /* Ancho apropiado para centrar */
-            max-width: 700px; /* Evitar que sea demasiado ancho */
+            width: 90%; /* AUMENTADO: Ancho apropiado para centrar (90%) */
+            max-width: 800px; /* AUMENTADO: Evitar que sea demasiado ancho */
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             flex-direction: column; /* Apila el input y el botón verticalmente */
@@ -596,26 +601,29 @@
             padding: 25px; /* Más padding */
             z-index: 18; /* Por debajo del welcome-screen, por encima del chat-body */
             border: none; /* Eliminar borde superior */
-            background-color: transparent; /* Fondo transparente para mostrar el primary-color del container */
+            background-color: var(--secondary-color); /* Fondo del área centrada */
             transition: all 0.5s ease; /* Transición para el movimiento */
             display: flex; /* Muestra el input-area cuando está centrado */
         }
         
-        /* Restablece estilos del input-field cuando el input-area está centrado */
+        /* Estilos del input-field cuando el input-area está centrado */
         .input-area.centered .input-field {
             width: calc(100% - 36px); /* Ajusta el padding (18px a cada lado) */
             max-width: none; /* Asegura que el textarea ocupe el ancho completo */
             margin-right: 0; /* Elimina el margen a la derecha */
+            min-height: 80px; /* AUMENTADO: Altura mínima más grande */
+            font-size: 1.3em; /* AUMENTADO: Texto más grande */
         }
 
-        /* Restablece estilos del send-button cuando el input-area está centrado */
+        /* Estilos del send-button cuando el input-area está centrado */
         .input-area.centered .send-button {
             width: 100%; /* El botón ocupa todo el ancho */
-            padding: 15px 30px; /* Un poco más de padding para que se vea más grande en modo centrado */
-            font-size: 1.1em;
+            padding: 18px 30px; /* AUMENTADO: Un poco más de padding para que se vea más grande en modo centrado */
+            font-size: 1.2em; /* AUMENTADO: Texto más grande */
         }
 
         /* Oculta el input-area si la welcome-screen está visible (la welcome-screen tiene z-index más alto) */
+        /* Esta regla es importante para que el welcome-screen se muestre por encima y oculte el input centrado */
         .welcome-screen:not(.hidden) + .chat-body + .input-area {
             display: none;
         }
@@ -687,7 +695,7 @@
         const newChatButtonHeader = document.getElementById('new-conversation-header-button');
         const loadingIndicator = document.getElementById('loading-indicator');
         const welcomeScreen = document.getElementById('welcome-screen');
-        const inputArea = document.getElementById('input-area'); // Usar el ID
+        const inputArea = document.getElementById('input-area'); 
         const startChatFromWelcomeButton = document.getElementById('start-chat-from-welcome');
 
         // Almacena mensajes en formato ChatML { role: "user/assistant/system", content: "..." }
@@ -811,6 +819,11 @@
                     // Guarda el chat que se está abandonando SOLO si ya tiene mensajes
                     if (activeChatIndex !== -1 && currentChatMessages.length > 0) {
                         chatHistory[activeChatIndex].messages = [...currentChatMessages];
+                    } else if (isCurrentChatUnsaved && currentChatMessages.length > 0) {
+                        // Si era un chat nuevo sin guardar y se ha empezado a escribir, lo guardamos
+                        const firstUserMsg = currentChatMessages.find(msg => msg.role === 'user');
+                        const defaultTitle = firstUserMsg ? firstUserMsg.content.substring(0, 22) + (firstUserMsg.content.length > 22 ? '...' : '') : 'Nueva Conversación';
+                        chatHistory.unshift({ title: defaultTitle, messages: [...currentChatMessages] });
                     }
                     
                     activeChatIndex = index;
@@ -936,7 +949,8 @@
         function showInitialWelcomeScreen() {
             welcomeScreen.classList.remove('hidden');
             chatContainer.classList.add('no-messages'); // Oculta header y chat-body
-            inputArea.classList.remove('centered'); // Asegura que el input NO esté centrado (ni visible)
+            inputArea.classList.remove('centered'); // Asegura que el input NO esté centrado
+            inputArea.style.display = 'none'; // Oculta el input-area completamente cuando está la bienvenida
         }
 
         // Oculta la pantalla de bienvenida (preparando para mostrar el input centrado o el chat normal)
@@ -955,10 +969,18 @@
             inputArea.style.gap = 'initial';
             inputArea.style.width = 'auto';
             inputArea.style.maxWidth = 'none';
-            
+            inputArea.style.boxShadow = 'none'; 
+            inputArea.style.border = '1px solid #444d57'; /* Vuelve a poner el borde superior */
+            inputArea.style.backgroundColor = 'var(--secondary-color)';
+            inputArea.style.padding = '15px';
+
+
             // Resetea los estilos específicos de los elementos hijos
             userInputField.style.width = 'auto'; // El flex-grow lo ajustará
             userInputField.style.marginRight = '15px'; // Vuelve al margen normal
+            userInputField.style.minHeight = '48px'; // Vuelve a la altura mínima para el chat normal
+            userInputField.style.fontSize = '1.1em'; // Vuelve al tamaño de fuente normal
+
             sendButton.style.width = 'auto';
             sendButton.style.padding = '12px 20px'; // Vuelve al padding normal
             sendButton.style.fontSize = '1.05em';
@@ -974,6 +996,7 @@
             hideInitialWelcomeScreen(); // Asegura que la welcome screen está oculta
             chatContainer.classList.add('no-messages'); // Oculta header y chat-body
             inputArea.classList.add('centered'); // Añade la clase para centrar el input y aplicar sus estilos
+            inputArea.style.display = 'flex'; // Asegura que el input-area se muestre
         }
 
 
@@ -983,15 +1006,18 @@
             if (userInput === "") return;
 
             // Si es la primera interacción en un nuevo chat (currentChatMessages está vacío)
-            if (currentChatMessages.length === 0) {
+            if (currentChatMessages.length === 0 && isCurrentChatUnsaved) {
                 // Al enviar el primer mensaje, siempre cambiamos a la vista de chat normal
                 hideInitialWelcomeScreen();
                 showChatContent(); 
                 
                 // Añadir el mensaje de bienvenida de la IA al iniciar el chat
+                // ¡OJO! Esto hará que el primer mensaje que vea el usuario sea "Bienvenido..." si no ha escrito nada.
+                // Si quieres que el primer mensaje en pantalla sea el del usuario, elimina estas dos líneas:
                 currentChatMessages.push({ role: 'assistant', content: 'Bienvenido a Amside AI. Estoy aquí para ayudarte. ¿Qué te gustaría saber?' });
                 addMessageToChat('assistant', 'Bienvenido a Amside AI. Estoy aquí para ayudarte. ¿Qué te gustaría saber?');
-                isCurrentChatUnsaved = false; // El chat ha empezado a tener contenido
+                
+                // El siguiente mensaje que se añada será el del usuario
             }
             
             addMessageToChat('user', userInput);
@@ -1027,14 +1053,14 @@
                 currentChatMessages.push({ role: 'assistant', content: aiResponseText });
 
                 // Lógica para guardar o actualizar el chat en el historial
-                if (activeChatIndex === -1) {
+                if (activeChatIndex === -1 && isCurrentChatUnsaved) { // Solo si es un chat completamente nuevo y no guardado
                     // Nuevo chat: Asignar un título y agregarlo al inicio del historial
                     const firstUserMessage = currentChatMessages.find(msg => msg.role === 'user');
                     const defaultTitle = firstUserMessage ? firstUserMessage.content.substring(0, 22) + (firstUserMessage.content.length > 22 ? '...' : '') : 'Nueva Conversación';
                     chatHistory.unshift({ title: defaultTitle, messages: [...currentChatMessages] });
                     activeChatIndex = 0; // El nuevo chat es ahora el activo
                     isCurrentChatUnsaved = false; // Ya no es un chat sin guardar, está en el historial
-                } else {
+                } else if (activeChatIndex !== -1) {
                     // Chat existente: Actualizar sus mensajes
                     chatHistory[activeChatIndex].messages = [...currentChatMessages];
                 }
