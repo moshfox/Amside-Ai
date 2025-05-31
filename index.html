@@ -4,41 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amside AI - Interfaz con IA Real</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
     <style>
+        /* Variables CSS para facilitar la gestión de colores y estilos */
         :root {
-            --primary-color: #22272b; /* Dark Background */
-            --secondary-color: #37404a; /* Darker Grey */
-            --accent-color: #00bcd4; /* Cyan */
-            --text-color-primary: #eee;
-            --text-color-secondary: #ccc;
-            --error-color: #f44336; /* Red accent */
-            --border-radius: 8px;
-            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-            --transition: all 0.3s ease-in-out;
-            --sidebar-width: 300px;
-            /* Variable para el color cian en RGB, útil para box-shadow con rgba */
-            --accent-color-rgb: 0, 188, 212;
+            --primary-color: #22272b; /* Fondo oscuro principal */
+            --secondary-color: #37404a; /* Gris oscuro para barras y elementos */
+            --accent-color: #00bcd4; /* Cian para elementos interactivos */
+            --accent-color-hover: #00838f; /* Cian más oscuro al pasar el ratón */
+            --text-color-primary: #eee; /* Texto claro principal */
+            --text-color-secondary: #ccc; /* Texto gris claro secundario */
+            --error-color: #f44336; /* Rojo para mensajes de error */
+            --border-radius: 10px; /* Bordes redondeados ligeramente más grandes */
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); /* Sombra para profundidad */
+            --transition: all 0.3s ease-in-out; /* Transiciones suaves */
+            --sidebar-width: 300px; /* Ancho del sidebar */
+            --accent-color-rgb: 0, 188, 212; /* Color cian en RGB para sombras */
         }
 
+        /* Estilos generales del cuerpo de la página */
         body {
-            font-family: 'Roboto Mono', monospace;
+            font-family: 'Roboto Mono', monospace; /* Fuente estilo consola */
             background-color: var(--primary-color);
             color: var(--text-color-primary);
             margin: 0;
-            display: flex;
-            min-height: 100vh;
+            display: flex; /* Contenedor principal usa flexbox */
+            min-height: 100vh; /* Altura mínima del viewport */
             padding: 0;
+            overflow: hidden; /* Evita scroll no deseado en el body */
         }
 
+        /* Estilos del sidebar (barra lateral izquierda) */
         .sidebar {
             background-color: var(--secondary-color);
             width: var(--sidebar-width);
-            border-right: 1px solid #444d57;
+            border-right: 1px solid #444d57; /* Separador */
             padding: 25px;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            flex-shrink: 0;
+            flex-shrink: 0; /* No se encoge */
+            box-shadow: var(--box-shadow);
+            z-index: 10; /* Para que esté por encima de otros elementos si hay solapamiento */
         }
 
         .sidebar-header {
@@ -46,14 +54,24 @@
             margin-bottom: 30px;
             text-align: left;
             width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Espacio entre el ícono y el texto */
+        }
+
+        .sidebar-header .icon {
+            font-size: 2.2em; /* Tamaño del ícono */
+            color: var(--accent-color);
         }
 
         .sidebar-header h2 {
             margin: 0;
-            font-size: 1.8em;
-            font-weight: 400;
+            font-size: 1.9em; /* Fuente más grande */
+            font-weight: 700; /* Más audaz */
+            text-shadow: 0 0 5px rgba(var(--accent-color-rgb), 0.5); /* Efecto neón suave */
         }
 
+        /* Estilo del botón "Nueva Conversación" */
         .new-chat-button {
             background-color: var(--accent-color);
             color: var(--text-color-primary);
@@ -61,53 +79,111 @@
             padding: 12px 18px;
             border-radius: var(--border-radius);
             cursor: pointer;
-            font-size: 1em;
+            font-size: 1.05em; /* Un poco más grande */
             margin-bottom: 20px;
-            transition: background-color var(--transition);
+            transition: background-color var(--transition), transform 0.2s ease;
             width: 100%;
             text-align: left;
             display: flex;
             align-items: center;
             justify-content: flex-start;
+            font-weight: 500;
         }
 
-        .new-chat-button svg {
+        .new-chat-button .material-symbols-outlined {
             margin-right: 10px;
+            font-size: 1.2em;
         }
 
+        .new-chat-button:hover {
+            background-color: var(--accent-color-hover);
+            transform: translateY(-2px); /* Pequeño efecto de elevación */
+        }
+
+        /* Título del historial de chat */
         .chat-list-title {
-            font-size: 0.9em;
+            font-size: 0.95em; /* Ligeramente más grande */
             color: var(--text-color-secondary);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 1px; /* Más espacio entre letras */
+            font-weight: 500;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed rgba(var(--accent-color-rgb), 0.3); /* Línea punteada */
+            width: 100%;
         }
 
+        /* Lista de chats en el historial */
         .chat-list {
             list-style: none;
             padding: 0;
             margin: 0;
             width: 100%;
+            overflow-y: auto; /* Para permitir scroll si hay muchos chats */
+            flex-grow: 1; /* Ocupa el espacio restante en el sidebar */
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: var(--accent-color) var(--secondary-color); /* Firefox */
+        }
+
+        .chat-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-list::-webkit-scrollbar-track {
+            background: var(--secondary-color);
+        }
+
+        .chat-list::-webkit-scrollbar-thumb {
+            background-color: var(--accent-color);
+            border-radius: 10px;
+            border: 2px solid var(--secondary-color);
         }
 
         .chat-list li {
             padding: 10px 15px;
             border-radius: var(--border-radius);
-            margin-bottom: 6px;
+            margin-bottom: 8px; /* Más espacio entre elementos */
             cursor: pointer;
             background-color: #2c343c;
             color: var(--text-color-secondary);
-            transition: background-color var(--transition), color var(--transition);
+            transition: background-color var(--transition), color var(--transition), transform 0.2s ease;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Espacio para el ícono de chat */
+        }
+        
+        .chat-list li .material-symbols-outlined {
+            font-size: 1.1em;
+            color: var(--text-color-secondary);
         }
 
         .chat-list li:hover {
-            background-color: var(--accent-color);
+            background-color: #3f4a56; /* Un gris más claro al pasar el ratón */
+            color: var(--text-color-primary);
+            transform: translateX(5px); /* Pequeño desplazamiento a la derecha */
+        }
+
+        .chat-list li:hover .material-symbols-outlined {
             color: var(--text-color-primary);
         }
 
+        .chat-list li.active {
+            background-color: var(--accent-color); /* Cian para el chat activo */
+            color: var(--text-color-primary);
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(var(--accent-color-rgb), 0.3);
+            transform: scale(1.02); /* Ligeramente más grande */
+        }
+
+        .chat-list li.active .material-symbols-outlined {
+            color: var(--text-color-primary);
+        }
+
+
+        /* Contenedor principal del chat */
         .chat-container {
             background-color: var(--primary-color);
             border-radius: var(--border-radius);
@@ -115,11 +191,13 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            flex-grow: 1;
+            flex-grow: 1; /* Ocupa el espacio restante */
             margin: 20px;
             border: 1px solid #333a40;
+            position: relative; /* Para posicionar el welcome-screen */
         }
 
+        /* Encabezado del chat */
         .chat-header {
             background-color: var(--secondary-color);
             color: var(--text-color-primary);
@@ -130,6 +208,8 @@
             border-top-right-radius: var(--border-radius);
             display: flex;
             align-items: center;
+            gap: 15px; /* Espacio entre el botón y el título */
+            flex-shrink: 0; /* Evita que se encoja */
         }
 
         .chat-header button {
@@ -138,100 +218,139 @@
             color: var(--text-color-primary);
             font-size: 1em;
             cursor: pointer;
-            margin-right: 20px;
             padding: 8px 12px;
             border-radius: var(--border-radius);
-            transition: background-color var(--transition);
+            transition: background-color var(--transition), transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+
+        .chat-header button .material-symbols-outlined {
+            font-size: 1.2em;
         }
 
         .chat-header button:hover {
             background-color: #444d57;
+            transform: translateY(-1px);
         }
 
         .chat-header h2 {
             margin: 0;
-            font-size: 1.4em;
-            font-weight: 400;
+            font-size: 1.5em; /* Un poco más grande */
+            font-weight: 500;
+            color: var(--accent-color);
+            text-shadow: 0 0 3px rgba(var(--accent-color-rgb), 0.3);
         }
 
+        /* Cuerpo del chat (donde aparecen los mensajes) */
         .chat-body {
             padding: 20px;
-            overflow-y: auto;
+            overflow-y: auto; /* Habilita el scroll vertical */
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 15px; /* Más espacio entre mensajes */
+            position: relative; /* Para el welcome screen */
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: var(--accent-color) var(--primary-color); /* Firefox */
         }
 
+        .chat-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-body::-webkit-scrollbar-track {
+            background: var(--primary-color);
+        }
+
+        .chat-body::-webkit-scrollbar-thumb {
+            background-color: var(--accent-color);
+            border-radius: 10px;
+            border: 2px solid var(--primary-color);
+        }
+
+        /* Estilo general para los mensajes de la IA */
         .message {
             background-color: #2c343c;
             color: var(--text-color-secondary);
             border-radius: var(--border-radius);
-            padding: 10px 14px;
+            padding: 12px 16px; /* Más padding */
             word-break: break-word;
             align-self: flex-start;
-            max-width: 80%;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            font-size: 0.95em;
+            max-width: 75%; /* Ancho máximo del mensaje */
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            font-size: 0.98em; /* Ligeramente más grande */
+            line-height: 1.6; /* Mejor legibilidad */
+            border: 1px solid #3f4a56; /* Borde sutil */
         }
 
+        /* Estilo específico para mensajes de error */
         .error-message {
-            background-color: #422b2b;
+            background-color: #422b2b; /* Fondo rojizo oscuro */
             color: var(--error-color);
             border-radius: var(--border-radius);
-            padding: 10px 14px;
+            padding: 12px 16px;
             word-break: break-word;
             align-self: flex-start;
-            max-width: 80%;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            font-size: 0.95em;
-            border: 1px solid #5a3232;
+            max-width: 75%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            font-size: 0.98em;
+            border: 1px solid #5a3232; /* Borde rojo */
         }
 
+        /* Contenedor para mensajes de usuario (para alinear a la derecha) */
         .user-message-container {
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
-            max-width: 80%;
+            align-items: flex-end; /* Alinea el contenido a la derecha */
+            max-width: 75%;
             align-self: flex-end;
         }
 
+        /* Estilo específico para mensajes del usuario */
         .user-message {
             background-color: var(--accent-color);
             color: var(--text-color-primary);
             border-radius: var(--border-radius);
-            padding: 10px 14px;
+            padding: 12px 16px;
             word-break: break-word;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            font-size: 0.95em;
+            box-shadow: 0 2px 6px rgba(var(--accent-color-rgb), 0.25);
+            font-size: 0.98em;
+            line-height: 1.6;
             margin-bottom: 5px;
+            border: 1px solid var(--accent-color-hover); /* Borde acentuado */
         }
 
+        /* Indicador de carga (spinner y texto) */
         .loading-indicator {
-            display: flex; /* Cambiado a flex para que el spinner y el texto estén en línea */
-            align-self: flex-end; /* Para que esté alineado con el mensaje del usuario */
+            display: flex;
+            align-self: flex-end;
             margin-top: 5px;
             align-items: center;
-            font-size: 0.8em;
+            font-size: 0.85em;
             color: var(--text-color-secondary);
             display: none; /* Oculto por defecto */
+            gap: 6px;
         }
 
         .loading-spinner {
             border: 2px solid rgba(255, 255, 255, 0.1);
             border-top: 2px solid var(--accent-color);
             border-radius: 50%;
-            width: 14px;
-            height: 14px;
+            width: 16px; /* Más grande */
+            height: 16px;
             animation: spin 1s linear infinite;
-            margin-right: 6px; /* Añadido margen para separar del texto */
         }
 
+        /* Animación para el spinner */
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
+        /* Área de entrada de texto y botón de enviar */
         .input-area {
             padding: 15px;
             border-top: 1px solid #444d57;
@@ -240,104 +359,241 @@
             background-color: var(--secondary-color);
             border-bottom-left-radius: var(--border-radius);
             border-bottom-right-radius: var(--border-radius);
+            flex-shrink: 0; /* Evita que se encoja */
         }
 
         .input-field {
             flex-grow: 1;
-            padding: 10px 12px;
+            padding: 12px 16px; /* Más padding */
             border: 1px solid #555e68;
             border-radius: var(--border-radius);
-            margin-right: 10px;
-            font-size: 0.95em;
+            margin-right: 12px; /* Más espacio */
+            font-size: 1em; /* Ligeramente más grande */
             color: var(--text-color-primary);
             background-color: #2c343c;
+            resize: none; /* Evita redimensionamiento por el usuario */
+            min-height: 40px; /* Altura mínima para una línea */
+            max-height: 120px; /* Altura máxima antes de scroll */
+            overflow-y: auto; /* Permite scroll vertical si el texto es largo */
+            line-height: 1.5;
+            transition: border-color var(--transition), box-shadow var(--transition);
         }
 
         .input-field:focus {
             outline: none;
             border-color: var(--accent-color);
-            box-shadow: 0 1px 3px rgba(var(--accent-color-rgb), 0.2);
+            box-shadow: 0 0 8px rgba(var(--accent-color-rgb), 0.4);
         }
 
         .send-button {
             background-color: var(--accent-color);
             color: var(--text-color-primary);
             border: none;
-            padding: 10px 15px;
+            padding: 12px 18px; /* Más padding */
             border-radius: var(--border-radius);
             cursor: pointer;
-            font-size: 0.95em;
-            transition: background-color var(--transition);
+            font-size: 1em;
+            transition: background-color var(--transition), transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .send-button .material-symbols-outlined {
+            font-size: 1.2em;
         }
 
         .send-button:hover {
-            background-color: #00838f; /* Cyan darken-1 */
+            background-color: var(--accent-color-hover);
+            transform: translateY(-2px);
+        }
+
+        .send-button:disabled {
+            background-color: #607d8b; /* Color gris para deshabilitado */
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.7;
+        }
+
+        /* --- Pantalla de bienvenida (New Conversation Screen) --- */
+        .welcome-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary-color); /* Mismo fondo que el chat */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 5; /* Por debajo del header y input, pero por encima del chat-body si está vacío */
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .welcome-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none; /* No permite clics cuando está oculto */
+        }
+
+        .welcome-screen h1 {
+            font-size: 3em; /* Título más grande */
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(var(--accent-color-rgb), 0.6);
+            letter-spacing: 2px;
+        }
+
+        .welcome-screen p {
+            font-size: 1.2em;
+            color: var(--text-color-secondary);
+            margin-bottom: 40px;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .welcome-screen .start-button {
+            background-color: var(--accent-color);
+            color: var(--text-color-primary);
+            border: none;
+            padding: 15px 30px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1.3em;
+            font-weight: 700;
+            transition: background-color var(--transition), transform 0.2s ease, box-shadow var(--transition);
+            box-shadow: 0 4px 15px rgba(var(--accent-color-rgb), 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .welcome-screen .start-button .material-symbols-outlined {
+            font-size: 1.5em;
+        }
+
+        .welcome-screen .start-button:hover {
+            background-color: var(--accent-color-hover);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(var(--accent-color-rgb), 0.6);
+        }
+
+        /* Ajustes para cuando la pantalla de bienvenida no esté visible y el chat-body sí */
+        .chat-container.has-messages .welcome-screen {
+            display: none;
+        }
+        
+        .chat-container.has-messages .chat-body {
+            opacity: 1;
+            visibility: visible;
+            display: flex; /* Asegura que el chat-body se muestre correctamente */
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="sidebar">
         <div class="sidebar-header">
+            <span class="material-symbols-outlined icon">chat_spark</span>
             <h2>Amside AI</h2>
         </div>
         <button class="new-chat-button" id="new-chat-button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square-fill" viewBox="0 0 16 16">
-                <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"/>
-            </svg>
+            <span class="material-symbols-outlined">add_circle</span>
             Nueva Conversación
         </button>
         <h3 class="chat-list-title">Historial</h3>
         <ul class="chat-list" id="chat-list">
             </ul>
     </div>
-    <div class="chat-container">
+    <div class="chat-container" id="chat-container">
         <div class="chat-header">
             <button id="new-conversation-header-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square-fill" viewBox="0 0 16 16">
-                    <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"/>
-                </svg>
+                <span class="material-symbols-outlined">add</span>
                 Nuevo
             </button>
             <h2>Chat</h2>
         </div>
+        
+        <div class="welcome-screen" id="welcome-screen">
+            <span class="material-symbols-outlined" style="font-size: 6em; color: var(--accent-color); margin-bottom: 20px; text-shadow: 0 0 15px rgba(var(--accent-color-rgb), 0.8);">auto_awesome</span>
+            <h1>Bienvenido a Amside AI</h1>
+            <p>Estoy aquí para ayudarte. ¿En qué puedo asistirte hoy? ¡Inicia una nueva conversación o selecciona una del historial!</p>
+            <button class="start-button" id="start-new-chat-welcome">
+                <span class="material-symbols-outlined">send_spark</span>
+                Empezar a Chatear
+            </button>
+        </div>
+
         <div class="chat-body" id="chat-messages">
             </div>
         <div class="input-area">
-            <input type="text" class="input-field" id="user-input" placeholder="Escribe tu mensaje...">
-            <button class="send-button" id="send-button">Enviar</button>
-            <div id="loading-indicator" class="loading-indicator">
-                <div class="loading-spinner"></div> Procesando...
-            </div>
+            <textarea class="input-field" id="user-input" placeholder="Escribe tu mensaje..."></textarea>
+            <button class="send-button" id="send-button">
+                <span class="material-symbols-outlined">send</span>
+                Enviar
+            </button>
+        </div>
+        <div id="loading-indicator" class="loading-indicator">
+            <div class="loading-spinner"></div> Procesando...
         </div>
     </div>
 
     <script>
-        // --- ¡¡¡ADVERTENCIA DE SEGURIDAD EXTREMA!!! ---
-        // ESTE TOKEN SERÁ PÚBLICO EN TU CÓDIGO FUENTE DE GITHUB PAGES.
-        // CUALQUIERA PUEDE COPIARLO Y USARLO.
-        // SOLO UTILIZA ESTO PARA DEMOSTRACIONES RÁPIDAS O USO PERSONAL Y NO SENSIBLE.
-        const HUGGINGFACE_API_TOKEN = "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"; // <-- ¡¡REEMPLAZA ESTO CON TU TOKEN REAL!!
+        // --- ¡¡¡IMPORTANTE!!! ---
+        // ESTA URL APUNTA A TU BACKEND FLASK.
+        // CUANDO DESPLIEGUES TU BACKEND EN RENDER.COM, OBTENDRÁS UNA URL PÚBLICA.
+        // DEBERÁS REEMPLAZAR ESTA LÍNEA CON ESA URL PÚBLICA.
+        // EJEMPLO: const API_CHAT_ENDPOINT = "https://tu-nombre-de-servicio.onrender.com/api/chat";
+        // Mientras tanto, para pruebas locales con Flask, "/api/chat" funciona.
+        const API_CHAT_ENDPOINT = "/api/chat";
 
-        // URL del modelo de Hugging Face Inference API
-        // deepseek-ai/DeepSeek-R1-Distill-Qwen-32B suele ser un buen candidato por API.
-        const MODEL_URL = "https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B";
-        // Si quieres probar específicamente Falcon-H1-1.5B-Deep-Instruct, sería:
         // Referencias a los elementos del DOM
+        const chatContainer = document.getElementById('chat-container');
         const chatMessages = document.getElementById('chat-messages');
-        const userInputField = document.getElementById('user-input'); // ¡Ahora sí existe este ID!
+        const userInputField = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
         const chatList = document.getElementById('chat-list');
         const newChatButtonSidebar = document.getElementById('new-chat-button');
         const newChatButtonHeader = document.getElementById('new-conversation-header-button');
         const loadingIndicator = document.getElementById('loading-indicator');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const startNewChatWelcomeButton = document.getElementById('start-new-chat-welcome');
 
         // Almacena mensajes en formato ChatML { role: "user/assistant/system", content: "..." }
         let currentChatMessages = []; // Mensajes de la conversación actual
         let chatHistory = []; // Para guardar múltiples conversaciones en la lista de la izquierda
 
-        // Función para añadir un mensaje visualmente al chat
-        // Parámetros: role ('user', 'assistant', 'error'), content (el texto del mensaje)
+        // --- Funciones para la persistencia del chat usando localStorage ---
+        function loadChatHistory() {
+            const storedHistory = localStorage.getItem('amside_chat_history');
+            if (storedHistory) {
+                try {
+                    chatHistory = JSON.parse(storedHistory);
+                    if (!Array.isArray(chatHistory)) {
+                        chatHistory = [];
+                    }
+                } catch (e) {
+                    console.error("Error parsing chat history from localStorage:", e);
+                    chatHistory = []; // Si hay un error, inicializar vacío
+                }
+            }
+            updateChatList();
+        }
+
+        function saveChatHistory() {
+            localStorage.setItem('amside_chat_history', JSON.stringify(chatHistory));
+        }
+
+        // --- Funciones de la Interfaz de Usuario ---
+
+        // Añade un mensaje visualmente al chat
         function addMessageToChat(role, content) {
             const messageContainer = document.createElement('div');
             const messageDiv = document.createElement('div');
@@ -354,129 +610,152 @@
             messageContainer.appendChild(messageDiv);
             chatMessages.appendChild(messageContainer);
             scrollToBottom();
+            showChatBody(); // Asegura que el chat-body esté visible
         }
 
-        // Función para mostrar un chat completo (ej. al cargar uno del historial)
+        // Muestra un chat completo (ej. al cargar uno del historial)
         function displayChat(messages) {
             chatMessages.innerHTML = ''; // Limpiar el chat actual
-            messages.forEach(msg => {
-                // Solo mostrar mensajes de 'user', 'assistant' o 'error'. 'system' es para la IA.
-                if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'error') {
-                    addMessageToChat(msg.role, msg.content);
-                }
-            });
+            if (messages.length > 0) {
+                messages.forEach(msg => {
+                    if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'error') {
+                        addMessageToChat(msg.role, msg.content);
+                    }
+                });
+                showChatBody();
+            } else {
+                hideChatBody(); // Si no hay mensajes, muestra la pantalla de bienvenida
+            }
             scrollToBottom();
         }
 
-        // Función para añadir la conversación actual a la lista de historial
+        // Actualiza la lista de chats en el sidebar
         function updateChatList() {
             chatList.innerHTML = ''; // Limpiar la lista
             chatHistory.forEach((chat, index) => {
                 const listItem = document.createElement('li');
-                // Tomar el contenido del primer mensaje del usuario para el nombre del chat
                 const firstUserMessage = chat.messages.find(msg => msg.role === 'user');
-                listItem.textContent = firstUserMessage ? firstUserMessage.content.substring(0, 22) + (firstUserMessage.content.length > 22 ? '...' : '') : 'Nueva Conversación';
+                const chatTitle = firstUserMessage ? firstUserMessage.content.substring(0, 22) + (firstUserMessage.content.length > 22 ? '...' : '') : 'Nueva Conversación';
+                listItem.innerHTML = `<span class="material-symbols-outlined">chat</span> ${chatTitle}`;
+                
+                if (chat.messages === currentChatMessages) {
+                    listItem.classList.add('active');
+                }
+
                 listItem.addEventListener('click', () => {
-                    currentChatMessages = chat.messages; // Cargar el historial completo
-                    displayChat(currentChatMessages); // Mostrarlo en el chat
+                    // Guarda el chat que se está abandonando si tiene contenido
+                    const activeChatIndex = chatHistory.findIndex(chat => chat.messages === currentChatMessages);
+                    if (activeChatIndex !== -1 && currentChatMessages.length > 1) {
+                        chatHistory[activeChatIndex].messages = [...currentChatMessages];
+                    } else if (activeChatIndex === -1 && currentChatMessages.length > 1) { // Si es un chat nuevo sin guardar y tiene contenido
+                        const firstUserMsg = currentChatMessages.find(msg => msg.role === 'user');
+                        if (firstUserMsg) {
+                            chatHistory.unshift({ name: firstUserMsg.content.substring(0, 25), messages: [...currentChatMessages] });
+                        }
+                    }
+
+                    // Carga el nuevo chat
+                    currentChatMessages = chat.messages;
+                    displayChat(currentChatMessages);
+                    updateChatList();
+                    saveChatHistory();
                 });
                 chatList.appendChild(listItem);
             });
+            saveChatHistory();
         }
-
-        // Función para guardar el chat en el historial
-        function saveChat(firstUserMessageContent) {
-            // Asegurarse de que el chat tenga mensajes reales (más allá del mensaje de bienvenida)
+        
+        // Inicia una nueva conversación
+        function startNewChat() {
+            // Guarda la conversación actual antes de iniciar una nueva
             if (currentChatMessages.length > 1) {
-                // Prevenir guardar el mismo chat múltiples veces
-                const isChatAlreadySaved = chatHistory.some(chat => chat.messages === currentChatMessages);
-                if (!isChatAlreadySaved) {
-                    const chatName = firstUserMessageContent.substring(0, 25);
-                    chatHistory.unshift({ name: chatName, messages: currentChatMessages }); // Añadir al principio
-                    updateChatList();
+                const activeChatIndex = chatHistory.findIndex(chat => chat.messages === currentChatMessages);
+                if (activeChatIndex !== -1) {
+                    chatHistory[activeChatIndex].messages = [...currentChatMessages];
+                } else {
+                    const firstUserMsg = currentChatMessages.find(msg => msg.role === 'user');
+                    if (firstUserMsg) {
+                        chatHistory.unshift({ name: firstUserMsg.content.substring(0, 25), messages: [...currentChatMessages] });
+                    }
                 }
             }
+            
+            currentChatMessages = []; // Vacía los mensajes para la nueva conversación
+            displayChat(currentChatMessages); // Esto mostrará la pantalla de bienvenida
+            updateChatList();
+            saveChatHistory();
+            userInputField.value = ''; // Limpia el input
+            hideLoadingIndicator(); // Asegura que el indicador de carga esté oculto
         }
 
-        // Función para iniciar una nueva conversación
-        function startNewChat() {
-            // Guardar la conversación actual antes de iniciar una nueva, si tiene contenido
-            if (currentChatMessages.length > 1) {
-                 const firstUserMessage = currentChatMessages.find(msg => msg.role === 'user');
-                 if (firstUserMessage) {
-                    saveChat(firstUserMessage.content);
-                 }
-            }
-            // Reiniciar currentChatMessages con el mensaje de bienvenida de la IA
-            currentChatMessages = [
-                { role: 'assistant', content: 'Bienvenido a Amside AI. Estoy aquí para ayudarte. ¿Qué te gustaría saber?' }
-            ];
-            displayChat(currentChatMessages);
-        }
-
-        // Mostrar/ocultar indicador de carga
+        // Muestra/oculta el indicador de carga
         function showLoadingIndicator() {
-            if (loadingIndicator) loadingIndicator.style.display = 'flex'; // Usar 'flex' para que el spinner y texto se alineen
-            sendButton.disabled = true; // Deshabilitar botón mientras carga
-            userInputField.disabled = true; // Deshabilitar input
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'flex';
+                // Posicionar el indicador de carga en relación al input-area
+                const inputAreaRect = document.querySelector('.input-area').getBoundingClientRect();
+                loadingIndicator.style.bottom = `${window.innerHeight - inputAreaRect.top + 10}px`; // Un poco más arriba del input
+                loadingIndicator.style.right = `20px`; // Alineado a la derecha
+                loadingIndicator.style.position = 'fixed'; // Para que flote
+            }
+            sendButton.disabled = true;
+            userInputField.disabled = true;
         }
 
         function hideLoadingIndicator() {
             if (loadingIndicator) loadingIndicator.style.display = 'none';
-            sendButton.disabled = false; // Habilitar botón
-            userInputField.disabled = false; // Habilitar input
-            userInputField.focus(); // Poner el foco de nuevo en el input
+            sendButton.disabled = false;
+            userInputField.disabled = false;
+            userInputField.focus();
         }
 
-        // Función para enviar mensaje a la IA
+        // Muestra la pantalla de bienvenida
+        function showWelcomeScreen() {
+            welcomeScreen.classList.remove('hidden');
+            chatContainer.classList.remove('has-messages');
+        }
+
+        // Oculta la pantalla de bienvenida y muestra el chat-body
+        function showChatBody() {
+            welcomeScreen.classList.add('hidden');
+            chatContainer.classList.add('has-messages');
+        }
+
+        // Si no hay mensajes, se debería mostrar la pantalla de bienvenida
+        function hideChatBody() {
+            welcomeScreen.classList.remove('hidden');
+            chatContainer.classList.remove('has-messages');
+        }
+
+
+        // --- Función principal para enviar mensajes ---
         async function sendMessage() {
             const userInput = userInputField.value.trim();
             if (userInput === "") return;
 
-            // Añadir mensaje del usuario a la UI y al historial de mensajes
+            // Si es la primera interacción en un nuevo chat, ocultar la pantalla de bienvenida
+            if (currentChatMessages.length === 0) {
+                showChatBody();
+            }
+
             addMessageToChat('user', userInput);
             currentChatMessages.push({ role: 'user', content: userInput });
-            userInputField.value = ""; // Limpiar el input
+            userInputField.value = "";
+            userInputField.style.height = 'auto'; // Restablece la altura del textarea
 
-            showLoadingIndicator(); // Mostrar el indicador de carga
+
+            showLoadingIndicator();
 
             try {
-                // Mensaje de sistema para darle personalidad a la IA
-                const systemMessageContent = (
-                    "Eres Amside AI, una inteligencia artificial creada por Hodelygil. "
-                    "Tu propósito principal es asistir en el estudio y el aprendizaje, "
-                    "proporcionando información y explicaciones detalladas. "
-                    "Sin embargo, también eres amigable y puedes mantener conversaciones informales y agradables. "
-                    "Responde de manera informativa y útil, pero con un tono conversacional."
-                );
-
-                // Construir el array de mensajes para la API
-                // Esto incluye el mensaje de sistema al inicio, seguido de la conversación actual.
-                const messagesForAPI = [
-                    { "role": "system", "content": systemMessageContent },
-                    ...currentChatMessages.filter(msg => msg.role !== 'system') // No enviar mensajes de sistema duplicados al history
-                ];
-
                 const payload = {
-                    "inputs": messagesForAPI, // Esto es el array de objetos {role, content}
-                    "parameters": {
-                        "max_new_tokens": 500,
-                        "do_sample": true,
-                        "temperature": 0.7,
-                        "top_p": 0.9,
-                        "repetition_penalty": 1.1,
-                        "return_full_text": false // Queremos solo la nueva generación del modelo
-                    }
+                    "messages": currentChatMessages
                 };
 
-                const headers = {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${HUGGINGFACE_API_TOKEN}`
-                };
-
-                const response = await fetch(MODEL_URL, {
+                const response = await fetch(API_CHAT_ENDPOINT, {
                     method: 'POST',
-                    headers: headers,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify(payload),
                 });
 
@@ -486,34 +765,45 @@
                 }
 
                 const data = await response.json();
-                // La respuesta de la API de inferencia es un array, el texto generado está en el primer elemento
-                const aiResponseText = data[0].generated_text;
+                const aiResponseText = data.response;
 
-                addMessageToChat('assistant', aiResponseText); // Añadir respuesta de la IA a la UI
-                currentChatMessages.push({ role: 'assistant', content: aiResponseText }); // Añadir al historial para futuras interacciones
+                addMessageToChat('assistant', aiResponseText);
+                currentChatMessages.push({ role: 'assistant', content: aiResponseText });
 
-                // Guardar el chat si es la primera interacción real en esta conversación
-                if (currentChatMessages.length === 2 && currentChatMessages[0].role === 'user') { // Primer mensaje de usuario + primera respuesta de IA
-                    saveChat(userInput);
+                // Lógica para guardar el chat en el historial la primera vez que hay una interacción real
+                if (currentChatMessages.filter(msg => msg.role === 'user').length === 1 &&
+                    currentChatMessages.filter(msg => msg.role === 'assistant').length === 1) {
+                    const firstUserMessage = currentChatMessages.find(msg => msg.role === 'user');
+                    if (firstUserMessage) {
+                        chatHistory.unshift({ messages: [...currentChatMessages] }); // Almacenar el array de mensajes directamente
+                        updateChatList();
+                    }
                 }
+                saveChatHistory();
 
             } catch (error) {
                 console.error("Error al obtener respuesta de la IA:", error);
                 addMessageToChat('error', `Lo siento, no pude obtener una respuesta. Error: ${error.message}`);
-                // No añadimos el error a currentChatMessages si no queremos que la IA lo "vea" en futuras interacciones.
             } finally {
-                hideLoadingIndicator(); // Ocultar el indicador de carga
+                hideLoadingIndicator();
             }
         }
 
-        // Event Listeners
-        // Se asegura que los elementos existan antes de añadir el listener
+        // Ajustar altura del textarea dinámicamente
+        function adjustTextareaHeight() {
+            userInputField.style.height = 'auto';
+            userInputField.style.height = userInputField.scrollHeight + 'px';
+        }
+
+        // --- Event Listeners (para interacciones del usuario) ---
         if (sendButton) {
             sendButton.addEventListener('click', sendMessage);
         }
         if (userInputField) {
+            userInputField.addEventListener('input', adjustTextareaHeight); // Ajusta la altura al escribir
             userInputField.addEventListener('keypress', (event) => {
-                if (event.key === 'Enter') {
+                if (event.key === 'Enter' && !event.shiftKey) { // Enter para enviar, Shift+Enter para nueva línea
+                    event.preventDefault(); // Previene la nueva línea por defecto
                     sendMessage();
                 }
             });
@@ -524,14 +814,42 @@
         if (newChatButtonHeader) {
             newChatButtonHeader.addEventListener('click', startNewChat);
         }
+        if (startNewChatWelcomeButton) {
+            startNewChatWelcomeButton.addEventListener('click', () => {
+                // Si el chat actual está vacío, simplemente muestra el chat-body.
+                // Si tiene mensajes y no está en el historial, guárdalo antes.
+                if (currentChatMessages.length === 0) {
+                     showChatBody();
+                     userInputField.focus();
+                     // Si la conversación ya tiene un mensaje de bienvenida, no lo agregues de nuevo
+                     if (chatMessages.innerHTML.trim() === '' || chatMessages.children.length === 0) {
+                         addMessageToChat('assistant', 'Bienvenido a Amside AI. Estoy aquí para ayudarte. ¿Qué te gustaría saber?');
+                         currentChatMessages.push({ role: 'assistant', content: 'Bienvenido a Amside AI. Estoy aquí para ayudarte. ¿Qué te gustaría saber?' });
+                         saveChatHistory();
+                     }
+                } else {
+                    startNewChat(); // Comienza un chat completamente nuevo, guardando el anterior
+                }
+            });
+        }
 
+
+        // Desplaza el chat hacia abajo automáticamente
         function scrollToBottom() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // Inicializar al cargar la página
-        startNewChat(); // Empieza una nueva conversación con el mensaje de bienvenida
-        updateChatList(); // Inicializa la lista de chats (vacía al principio)
+        // --- Inicialización de la aplicación al cargar la página ---
+        loadChatHistory();
+        if (chatHistory.length > 0) {
+            currentChatMessages = chatHistory[0].messages;
+            displayChat(currentChatMessages);
+        } else {
+            // Si no hay historial, inicia un nuevo chat vacío mostrando la pantalla de bienvenida.
+            // El mensaje de bienvenida se añade al hacer clic en "Empezar a Chatear".
+            startNewChat();
+            showWelcomeScreen();
+        }
     </script>
 </body>
 </html>
