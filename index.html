@@ -22,8 +22,8 @@
             --transition: all 0.3s ease-in-out; /* Transiciones suaves */
             --sidebar-width: 300px; /* Ancho del sidebar */
             --accent-color-rgb: 0, 188, 212; /* Color cian en RGB para sombras */
-            --glitch-color-1: #ff00c1; /* Color para efecto glitch 1 */
-            --glitch-color-2: #00ffff; /* Color para efecto glitch 2 */
+            --glitch-color-1: #ff00c1; /* Color para efecto glitch 1 (si se vuelve a usar) */
+            --glitch-color-2: #00ffff; /* Color para efecto glitch 2 (si se vuelve a usar) */
         }
 
         /* Estilos generales del cuerpo de la página */
@@ -78,7 +78,7 @@
             color: var(--accent-color);
             text-shadow: 0 0 10px rgba(var(--accent-color-rgb), 0.7); /* Efecto neón más marcado */
             position: relative;
-            animation: pulse-icon 1.5s infinite alternate; /* Animación de pulso */
+            /* Eliminada la animación 'pulse-icon' */
         }
 
         .sidebar-header h2 {
@@ -89,58 +89,13 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-shadow: 0 0 8px rgba(var(--accent-color-rgb), 0.6); /* Sombra para el texto */
-            position: relative; /* Necesario para los pseudo-elementos del glitch */
+            position: relative;
+            /* Eliminadas las animaciones 'glitch-anim' */
         }
 
-        /* Animación de Glitch para el título */
-        .sidebar-header h2::before,
-        .sidebar-header h2::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, var(--accent-color), #00e5ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 8px rgba(var(--accent-color-rgb), 0.6);
-        }
-
-        .sidebar-header h2::before {
-            left: 2px;
-            text-shadow: -1px 0 var(--glitch-color-1);
-            animation: glitch-anim-1 2s infinite alternate-reverse;
-        }
-
-        .sidebar-header h2::after {
-            left: -2px;
-            text-shadow: 1px 0 var(--glitch-color-2);
-            animation: glitch-anim-2 2s infinite alternate-reverse;
-        }
-
-        @keyframes glitch-anim-1 {
-            0% { transform: translate(0, 0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-1px, -1px); }
-            60% { transform: translate(3px, 0); }
-            80% { transform: translate(-2px, -2px); }
-            100% { transform: translate(0, 0); }
-        }
-
-        @keyframes glitch-anim-2 {
-            0% { transform: translate(0, 0); }
-            20% { transform: translate(1px, -1px); }
-            40% { transform: translate(2px, 2px); }
-            60% { transform: translate(-3px, 0); }
-            80% { transform: translate(1px, 1px); }
-            100% { transform: translate(0, 0); }
-        }
-
-        @keyframes pulse-icon {
-            from { transform: scale(1); opacity: 1; }
-            to { transform: scale(1.05); opacity: 0.9; }
-        }
+        /* Eliminadas las reglas para h2::before y h2::after para quitar el glitch */
+        /* Eliminado @keyframes glitch-anim-1 y glitch-anim-2 */
+        /* Eliminado @keyframes pulse-icon */
 
         /* Estilo del botón "Nueva Conversación" */
         .new-chat-button {
@@ -418,7 +373,7 @@
         .chat-body {
             padding: 20px;
             overflow-y: auto; /* Habilita el scroll vertical */
-            flex-grow: 1;
+            flex-grow: 1; /* Ocupa todo el espacio disponible */
             display: flex;
             flex-direction: column;
             gap: 15px; /* Más espacio entre mensajes */
@@ -601,6 +556,7 @@
             flex-shrink: 0; /* Evita que se encoja */
             z-index: 20; /* Asegura que esté por encima del welcome-screen y input centrado */
             transition: all 0.5s ease; /* Transición para el movimiento */
+            position: relative; /* Para las sugerencias de prompt */
         }
 
         .input-field {
@@ -734,7 +690,7 @@
             box-shadow: 0 8px 25px rgba(var(--accent-color-rgb), 0.7);
         }
 
-        /* Contenedor para sugerencias de prompts */
+        /* Contenedor para sugerencias de prompts en welcome screen */
         .prompt-suggestions {
             display: flex;
             flex-wrap: wrap;
@@ -814,6 +770,68 @@
             display: none !important;
         }
 
+        /* --- Sugerencias de prompt debajo del input (cuando el chat está activo) --- */
+        .dynamic-prompt-suggestions {
+            position: absolute;
+            bottom: calc(100% + 10px); /* Posicionado encima del input-area */
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 30px); /* Ancho del input-area - padding */
+            max-width: 750px;
+            background-color: var(--secondary-color);
+            border-radius: var(--border-radius);
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transform-origin: bottom;
+            animation: slideUpFadeIn 0.3s ease forwards;
+            z-index: 10; /* Para que esté sobre el chat-body si es necesario */
+        }
+        .dynamic-prompt-suggestions.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            animation: none; /* Desactivar animación si está oculto */
+        }
+
+        @keyframes slideUpFadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        .dynamic-prompt-suggestions .suggest-item {
+            background-color: #2c343c;
+            color: var(--text-color-secondary);
+            border: 1px solid #3f4a56;
+            padding: 8px 12px;
+            border-radius: 20px; /* Más redondeado para parecer "tags" */
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dynamic-prompt-suggestions .suggest-item:hover {
+            background-color: #3f4a56;
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+        .dynamic-prompt-suggestions .suggest-item .material-symbols-outlined {
+            font-size: 0.9em;
+            color: var(--accent-color);
+        }
+
         /* Para el modo oscuro/claro (ejemplo, se necesitaría JS para cambiar una clase en body/html) */
         /* body.light-mode {
             --primary-color: #f0f2f5;
@@ -885,6 +903,8 @@
         <div class="chat-body" id="chat-messages">
             </div>
         <div class="input-area" id="input-area">
+            <div class="dynamic-prompt-suggestions hidden" id="dynamic-prompt-suggestions">
+                </div>
             <textarea class="input-field" id="user-input" placeholder="Escribe tu mensaje..."></textarea>
             <button class="send-button" id="send-button" type="button">
                 <span class="material-symbols-outlined" aria-hidden="true">send</span>
@@ -908,22 +928,39 @@
 
         // Referencias a los elementos del DOM
         const chatContainer = document.getElementById('chat-container');
-        const chatHeader = document.getElementById('chat-header'); // Añadido
-        const currentChatTitle = document.getElementById('current-chat-title'); // Añadido
+        const chatHeader = document.getElementById('chat-header');
+        const currentChatTitle = document.getElementById('current-chat-title');
         const chatMessages = document.getElementById('chat-messages');
         const userInputField = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
         const chatList = document.getElementById('chat-list');
         const newChatButtonSidebar = document.getElementById('new-chat-button');
         const newChatButtonHeader = document.getElementById('new-conversation-header-button');
-        const typingIndicator = document.getElementById('typing-indicator'); // Renombrado
+        const typingIndicator = document.getElementById('typing-indicator');
         const welcomeScreen = document.getElementById('welcome-screen');
-        const inputArea = document.getElementById('input-area'); // Usar ID directamente
+        const inputArea = document.getElementById('input-area');
         const startChatFromWelcomeButton = document.getElementById('start-chat-from-welcome');
-        const clearChatButton = document.getElementById('clear-chat-button'); // Nuevo botón
+        const clearChatButton = document.getElementById('clear-chat-button');
 
-        // Sugerencias de prompts
+        // Sugerencias de prompts de la welcome screen
         const suggestPromptButtons = document.querySelectorAll('.suggest-prompt-button');
+
+        // Nuevo: Contenedor para sugerencias dinámicas
+        const dynamicPromptSuggestions = document.getElementById('dynamic-prompt-suggestions');
+
+        // Nuevo: Array de sugerencias de prompts para la escritura
+        const PROMPT_SUGGESTIONS = [
+            { text: "Explícame", icon: "lightbulb", fullPrompt: "Explícame " },
+            { text: "Dame ideas para", icon: "psychology", fullPrompt: "Dame ideas para " },
+            { text: "Escribe un poema sobre", icon: "edit_note", fullPrompt: "Escribe un poema sobre " },
+            { text: "Resume este concepto:", icon: "summarize", fullPrompt: "Resume este concepto: " },
+            { text: "Traduce esto:", icon: "translate", fullPrompt: "Traduce esto: " },
+            { text: "Genera código JavaScript para", icon: "code", fullPrompt: "Genera código JavaScript para " },
+            { text: "Cómo puedo", icon: "help", fullPrompt: "Cómo puedo " },
+            { text: "Diferencia entre", icon: "compare_arrows", fullPrompt: "Diferencia entre " },
+            { text: "Definición de", icon: "article", fullPrompt: "Definición de " },
+            { text: "Cuáles son los beneficios de", icon: "trending_up", fullPrompt: "Cuáles son los beneficios de " },
+        ];
 
 
         // Almacena mensajes en formato ChatML { role: "user/assistant/system", content: "..." }
@@ -931,6 +968,7 @@
         let chatHistory = []; // Para guardar múltiples conversaciones en la lista de la izquierda
         let activeChatIndex = -1; // Índice del chat activo en chatHistory
         let isSendingMessage = false; // Bandera para evitar envíos múltiples
+        let userScrolledUp = false; // Nueva bandera para controlar el scroll automático
 
         // --- Funciones para la persistencia del chat usando localStorage ---
         function loadChatHistory() {
@@ -965,13 +1003,14 @@
         // Muestra la pantalla de bienvenida y oculta el resto
         function showInitialWelcomeScreen() {
             welcomeScreen.classList.remove('hidden');
-            chatContainer.classList.remove('centered-input'); // Asegurarse de que no esté centrado
+            chatContainer.classList.remove('centered-input');
             chatHeader.classList.add('hidden');
             chatMessages.classList.add('hidden');
-            inputArea.classList.add('hidden'); // Ocultar el input-area también
+            inputArea.classList.add('hidden');
             userInputField.value = '';
             userInputField.focus();
-            currentChatTitle.textContent = 'Chat'; // Resetear el título
+            currentChatTitle.textContent = 'Chat';
+            dynamicPromptSuggestions.classList.add('hidden'); // Ocultar sugerencias dinámicas
         }
 
         // Muestra el input de chat centrado (cuando no hay mensajes y la bienvenida está oculta)
@@ -980,10 +1019,11 @@
             chatContainer.classList.add('centered-input');
             chatHeader.classList.add('hidden');
             chatMessages.classList.add('hidden');
-            inputArea.classList.remove('hidden'); // Mostrar el input-area
+            inputArea.classList.remove('hidden');
             userInputField.value = '';
             userInputField.focus();
-            currentChatTitle.textContent = 'Nueva Conversación'; // Setear título para el chat centrado
+            currentChatTitle.textContent = 'Nueva Conversación';
+            dynamicPromptSuggestions.classList.add('hidden'); // Ocultar sugerencias dinámicas
         }
 
         // Muestra el chat completo (mensajes y input abajo)
@@ -992,7 +1032,7 @@
             chatContainer.classList.remove('centered-input');
             chatHeader.classList.remove('hidden');
             chatMessages.classList.remove('hidden');
-            inputArea.classList.remove('hidden'); // Asegurarse de que el input-area esté visible
+            inputArea.classList.remove('hidden');
             userInputField.focus();
         }
 
@@ -1012,7 +1052,11 @@
             messageDiv.textContent = content;
             messageContainer.appendChild(messageDiv);
             chatMessages.appendChild(messageContainer);
-            scrollToBottom();
+
+            // Solo hacemos scroll si el usuario no ha subido manualmente
+            if (!userScrolledUp) {
+                scrollToBottom();
+            }
         }
 
         // Muestra un chat completo (ej. al cargar uno del historial)
@@ -1028,12 +1072,13 @@
             } else {
                 showCenteredInput(); // Si no hay mensajes, muestra el input centrado
             }
-            scrollToBottom();
+            scrollToBottom(); // Siempre ir al final al cargar un chat
         }
 
         // Desplaza el chat hasta el último mensaje
         function scrollToBottom() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
+            userScrolledUp = false; // Resetear la bandera cuando se hace scroll al final
         }
 
         // Actualiza la lista de chats en el sidebar
@@ -1094,6 +1139,8 @@
             saveChatHistory();
             displayChat(currentChatMessages); // Muestra la pantalla de input centrado
             currentChatTitle.textContent = "Nueva Conversación";
+            userInputField.focus();
+            hideDynamicPromptSuggestions(); // Ocultar sugerencias al iniciar un nuevo chat
         }
 
         // Carga una conversación existente
@@ -1111,6 +1158,7 @@
             currentChatTitle.textContent = chatHistory[index].title;
             displayChat(currentChatMessages);
             updateChatList(); // Actualiza la clase 'active'
+            hideDynamicPromptSuggestions(); // Ocultar sugerencias al cargar un chat existente
         }
 
         // Edita el título de un chat
@@ -1156,6 +1204,7 @@
             userInputField.disabled = true;
             userInputField.value = ''; // Limpiar input después de enviar
             adjustTextareaHeight(); // Ajustar altura después de limpiar
+            hideDynamicPromptSuggestions(); // Ocultar sugerencias al enviar
 
             // Si es el primer mensaje de una nueva conversación, muestra el contenido normal
             if (currentChatMessages.length === 0) {
@@ -1217,15 +1266,55 @@
             }
         }
 
+        // --- Gestión de Sugerencias Dinámicas de Prompts ---
+        function showDynamicPromptSuggestions(suggestions) {
+            dynamicPromptSuggestions.innerHTML = '';
+            if (suggestions.length === 0) {
+                dynamicPromptSuggestions.classList.add('hidden');
+                return;
+            }
+            dynamicPromptSuggestions.classList.remove('hidden');
+            suggestions.forEach(sug => {
+                const button = document.createElement('button');
+                button.classList.add('suggest-item');
+                button.type = 'button';
+                button.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">${sug.icon}</span> ${sug.text}`;
+                button.dataset.fullPrompt = sug.fullPrompt || sug.text; // Almacena el prompt completo si es diferente
+                button.addEventListener('click', () => {
+                    userInputField.value = button.dataset.fullPrompt;
+                    adjustTextareaHeight();
+                    userInputField.focus();
+                    hideDynamicPromptSuggestions();
+                });
+                dynamicPromptSuggestions.appendChild(button);
+            });
+        }
+
+        function hideDynamicPromptSuggestions() {
+            dynamicPromptSuggestions.classList.add('hidden');
+        }
+
+        function filterAndShowSuggestions(query) {
+            const lowerCaseQuery = query.toLowerCase();
+            const filtered = PROMPT_SUGGESTIONS.filter(sug => 
+                sug.text.toLowerCase().includes(lowerCaseQuery) || sug.fullPrompt.toLowerCase().includes(lowerCaseQuery)
+            );
+            if (query.length > 1) { // Mostrar sugerencias solo si hay al menos 2 caracteres
+                showDynamicPromptSuggestions(filtered);
+            } else {
+                hideDynamicPromptSuggestions();
+            }
+        }
+
         // --- Event Listeners ---
 
         // Evento para el botón de nueva conversación en el sidebar
         newChatButtonSidebar.addEventListener('click', () => {
-            newChatButtonSidebar.classList.add('clicked'); // Añadir clase para la animación
+            newChatButtonSidebar.classList.add('clicked');
             setTimeout(() => {
                 newChatButtonSidebar.classList.remove('clicked');
                 startNewConversation();
-            }, 600); // Duración de la animación
+            }, 600);
         });
 
         // Evento para el botón de nueva conversación en el header
@@ -1235,16 +1324,15 @@
 
         // Evento para el botón de iniciar chat desde la pantalla de bienvenida
         startChatFromWelcomeButton.addEventListener('click', () => {
-            // Asegurarse de que el botón tenga el efecto de onda
             startChatFromWelcomeButton.classList.add('clicked');
             setTimeout(() => {
                 startChatFromWelcomeButton.classList.remove('clicked');
                 if (chatHistory.length === 0) {
-                    startNewConversation(); // Inicia una nueva conversación si no hay ninguna
+                    startNewConversation();
                 } else {
-                    loadConversation(chatHistory.length - 1); // Carga la última conversación
+                    loadConversation(chatHistory.length - 1);
                 }
-            }, 300); // Pequeño retraso para el efecto visual
+            }, 300);
         });
 
         // Evento para enviar mensaje al hacer clic en el botón
@@ -1252,14 +1340,27 @@
 
         // Evento para enviar mensaje al presionar Enter en el campo de texto
         userInputField.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter' && !event.shiftKey) { // Enter sin Shift
-                event.preventDefault(); // Evita salto de línea
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
                 sendMessage();
             }
         });
 
         // Evento para ajustar la altura del textarea al escribir
-        userInputField.addEventListener('input', adjustTextareaHeight);
+        userInputField.addEventListener('input', () => {
+            adjustTextareaHeight();
+            filterAndShowSuggestions(userInputField.value); // Activar sugerencias dinámicas
+        });
+
+        // Evento para ocultar sugerencias al perder foco
+        userInputField.addEventListener('blur', () => {
+            // Un pequeño retraso para permitir que los clics en las sugerencias se registren
+            setTimeout(() => {
+                if (!dynamicPromptSuggestions.contains(document.activeElement)) {
+                    hideDynamicPromptSuggestions();
+                }
+            }, 100);
+        });
 
         // Evento para manejar clics en la lista de chats (cargar/editar/borrar)
         chatList.addEventListener('click', (event) => {
@@ -1269,27 +1370,23 @@
             const index = parseInt(listItem.dataset.index);
 
             if (event.target.classList.contains('edit-icon')) {
-                // Lógica para editar título
                 const textDisplay = listItem.querySelector('.chat-text-display');
                 const currentTitle = textDisplay.textContent;
                 
-                // Crear input de edición
                 const inputEdit = document.createElement('input');
                 inputEdit.type = 'text';
                 inputEdit.classList.add('edit-title-input');
                 inputEdit.value = currentTitle;
-                inputEdit.maxLength = 50; // Limitar longitud
+                inputEdit.maxLength = 50;
 
-                textDisplay.replaceWith(inputEdit); // Reemplazar texto con input
+                textDisplay.replaceWith(inputEdit);
                 inputEdit.focus();
 
-                // Guardar al perder foco o presionar Enter
                 const saveEdit = () => {
                     const newTitle = inputEdit.value.trim();
                     if (newTitle && newTitle !== currentTitle) {
                         editChatTitle(index, newTitle);
                     } else {
-                        // Si está vacío o sin cambios, restaurar el original
                         textDisplay.textContent = currentTitle;
                         inputEdit.replaceWith(textDisplay);
                     }
@@ -1299,7 +1396,7 @@
 
                 const handleEnterEdit = (e) => {
                     if (e.key === 'Enter') {
-                        inputEdit.blur(); // Dispara el evento blur
+                        inputEdit.blur();
                     }
                 };
 
@@ -1307,10 +1404,8 @@
                 inputEdit.addEventListener('keypress', handleEnterEdit);
 
             } else if (event.target.classList.contains('delete-icon')) {
-                // Lógica para borrar chat
                 deleteChat(index);
             } else {
-                // Lógica para cargar chat
                 loadConversation(index);
             }
         });
@@ -1318,12 +1413,12 @@
         // Evento para el botón "Limpiar Chat" en el header
         clearChatButton.addEventListener('click', () => {
             if (confirm("¿Estás seguro de que quieres limpiar los mensajes de esta conversación?")) {
-                currentChatMessages = []; // Vaciar los mensajes de la conversación actual
+                currentChatMessages = [];
                 if (activeChatIndex !== -1) {
-                    chatHistory[activeChatIndex].messages = []; // También en el historial
+                    chatHistory[activeChatIndex].messages = [];
                 }
                 saveChatHistory();
-                displayChat(currentChatMessages); // Vuelve a mostrar el input centrado si no hay mensajes
+                displayChat(currentChatMessages);
             }
         });
 
@@ -1331,15 +1426,20 @@
         suggestPromptButtons.forEach(button => {
             button.addEventListener('click', () => {
                 userInputField.value = button.dataset.prompt;
-                // Si aún estamos en la pantalla de bienvenida, simular un "Start Chat"
                 if (!welcomeScreen.classList.contains('hidden') && chatHistory.length === 0) {
-                    startNewConversation(); // Esto cambiará a la vista de chat
-                    setTimeout(() => sendMessage(), 100); // Pequeño retraso para que la UI se actualice
+                    startNewConversation();
+                    setTimeout(() => sendMessage(), 100);
                 } else {
-                    // Si ya estamos en un chat o el input está centrado, simplemente envía
                     sendMessage();
                 }
             });
+        });
+
+        // Nuevo: Control de scroll manual del usuario
+        chatMessages.addEventListener('scroll', () => {
+            // Si el usuario no está cerca del final, asumimos que ha hecho scroll hacia arriba
+            const scrollThreshold = 50; // Pixeles desde el final para considerar "cerca"
+            userScrolledUp = (chatMessages.scrollHeight - chatMessages.clientHeight - chatMessages.scrollTop) > scrollThreshold;
         });
 
 
@@ -1349,18 +1449,10 @@
             if (chatHistory.length === 0) {
                 showInitialWelcomeScreen();
             } else {
-                // Carga la última conversación al iniciar si hay historial
                 loadConversation(chatHistory.length - 1);
             }
-            adjustTextareaHeight(); // Ajustar altura inicial del textarea
+            adjustTextareaHeight();
         });
-
-        // Añadir sonido al enviar mensaje (ejemplo, requeriría un archivo de audio)
-        // const sendSound = new Audio('path/to/send_message.mp3');
-        // sendButton.addEventListener('click', () => {
-        //     sendMessage();
-        //     if (sendSound) sendSound.play();
-        // });
 
         // Añadir atajo de teclado para nuevo chat (Ctrl/Cmd + N)
         document.addEventListener('keydown', (event) => {
@@ -1369,36 +1461,6 @@
                 startNewConversation();
             }
         });
-
-        // --- Funciones de redimensionamiento del sidebar (Más avanzado con JS) ---
-        // Esto requeriría añadir un "handle" arrastrable en el borde del sidebar
-        // y usar eventos mouseup, mousedown, mousemove para recalcular el ancho.
-        // Por la complejidad, no lo implemento directamente aquí, pero es la idea.
-        // const sidebar = document.querySelector('.sidebar');
-        // const resizeHandle = document.createElement('div');
-        // resizeHandle.style.width = '5px';
-        // resizeHandle.style.cursor = 'ew-resize';
-        // resizeHandle.style.position = 'absolute';
-        // resizeHandle.style.right = '0';
-        // resizeHandle.style.top = '0';
-        // resizeHandle.style.bottom = '0';
-        // sidebar.appendChild(resizeHandle);
-        // let isResizing = false;
-        // resizeHandle.addEventListener('mousedown', (e) => {
-        //     isResizing = true;
-        //     document.body.style.cursor = 'ew-resize';
-        // });
-        // document.addEventListener('mousemove', (e) => {
-        //     if (!isResizing) return;
-        //     let newWidth = e.clientX;
-        //     if (newWidth > 200 && newWidth < 500) { // Limitar el ancho
-        //         sidebar.style.width = newWidth + 'px';
-        //     }
-        // });
-        // document.addEventListener('mouseup', () => {
-        //     isResizing = false;
-        //     document.body.style.cursor = 'default';
-        // });
 
     </script>
 </body>
