@@ -283,7 +283,6 @@
             align-items: center;
             gap: 15px; /* Espacio entre el botón y el título */
             flex-shrink: 0; /* Evita que se encoja */
-            position: relative; /* Para el z-index */
             z-index: 20; /* Asegura que esté por encima del welcome-screen y input centrado */
         }
 
@@ -327,7 +326,6 @@
             display: flex;
             flex-direction: column;
             gap: 15px; /* Más espacio entre mensajes */
-            position: relative; /* Para el welcome screen */
             scrollbar-width: thin; /* Firefox */
             scrollbar-color: var(--accent-color) var(--primary-color); /* Firefox */
             z-index: 10; /* Por debajo del header, por encima del welcome-screen */
@@ -436,8 +434,8 @@
             border-bottom-left-radius: var(--border-radius);
             border-bottom-right-radius: var(--border-radius);
             flex-shrink: 0; /* Evita que se encoja */
-            position: relative; /* Para el z-index */
             z-index: 20; /* Asegura que esté por encima del welcome-screen y input centrado */
+            /* Flex-direction y otros se gestionarán por JS o por las clases de estado */
         }
 
         .input-field {
@@ -567,16 +565,14 @@
 
 
         /* --- Estilo para el input-area centrado (cuando no hay mensajes y la pantalla de bienvenida está oculta) --- */
-        .chat-container.no-messages .chat-body {
-            display: none; /* Oculta el chat-body cuando no hay mensajes */
+        /* Oculta el chat-body cuando está el input centrado */
+        .chat-container.centered-input .chat-body {
+            display: none;
         }
 
-        .chat-container.no-messages .chat-header {
-            display: none; /* Oculta el header cuando no hay mensajes o está la bienvenida */
-        }
-
-        .chat-container.no-messages .input-area {
-            position: absolute; /* Para centrarlo */
+        /* Posiciona y estiliza el input-area cuando está centrado */
+        .chat-container.centered-input .input-area {
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -591,23 +587,30 @@
             border: none; /* Eliminar borde superior */
             background-color: transparent; /* Fondo transparente para mostrar el primary-color del container */
             transition: all 0.5s ease; /* Transición para el movimiento */
-            display: none; /* Oculto por defecto, solo se muestra cuando se necesita centrado Y welcome-screen NO está visible */
+            display: flex; /* Asegura que se muestre cuando está centrado */
         }
         
-        .chat-container.no-messages.input-centered .input-area {
-            display: flex; /* Muestra el input-area cuando está centrado y el welcome-screen está oculto */
-        }
-
-
-        .chat-container.no-messages .input-area .input-field {
+        .chat-container.centered-input .input-area .input-field {
             width: calc(100% - 32px); /* Ajusta el padding */
             max-width: none; /* Asegura que el textarea ocupe el ancho completo */
             margin-right: 0;
         }
 
-        .chat-container.no-messages .input-area .send-button {
+        .chat-container.centered-input .input-area .send-button {
             width: 100%; /* El botón ocupa todo el ancho */
         }
+        
+        /* Oculta el header cuando la pantalla de bienvenida o el input centrado están activos */
+        .chat-container.welcome-active .chat-header,
+        .chat-container.centered-input .chat-header {
+            display: none;
+        }
+
+        /* Asegurarse de que el input-area no se muestre si la welcome-screen está visible */
+        .welcome-screen:not(.hidden) ~ .input-area {
+            display: none !important;
+        }
+
     </style>
 </head>
 <body>
@@ -737,15 +740,19 @@
         function displayChat(messages) {
             chatMessages.innerHTML = ''; // Limpiar el chat actual
             if (messages.length > 0) {
-                showChatContent(); // Muestra el chat normal con header y input abajo
                 messages.forEach(msg => {
                     if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'error') {
                         addMessageToChat(msg.role, msg.content);
                     }
                 });
+                showChatContent(); // Muestra el chat normal con header y input abajo
             } else {
-                // Si no hay mensajes, SIEMPRE muestra la pantalla de bienvenida completa.
-                showInitialWelcomeScreen(); 
+                // Si no hay mensajes, OCULTA el chat-body y PONE el input al centro (o muestra bienvenida si es la primera vez)
+                if (chatHistory.length === 0 && !localStorage.getItem('amside_first_visit_done')) {
+                    showInitialWelcomeScreen(); // Muestra la pantalla de bienvenida completa
+                } else {
+                    hideChatContent(); // Oculta el chat-body y centra el input
+                }
             }
             scrollToBottom();
             adjustTextareaHeight(); // Asegura que el textarea tenga el tamaño correcto
@@ -789,301 +796,284 @@
                 
                 listItem.appendChild(chatActions);
 
-                if (index === activeChatIndex) {
-                    listItem.classList.add('active');
-                }
-
                 listItem.addEventListener('click', () => {
-                    // Guarda el chat que se está abandonando
-                    if (activeChatIndex !== -1 && currentChatMessages.length > 0) {
-                        chatHistory[activeChatIndex].messages = [...currentChatMessages];
+                    if (activeChatIndex !== index) { // Solo cargar si no es el mismo chat
+                        loadChat(index);
                     }
-                    
-                    activeChatIndex = index;
-                    currentChatMessages = chatHistory[activeChatIndex].messages;
-                    displayChat(currentChatMessages);
-                    updateChatList(); // Para actualizar la clase 'active'
-                    saveChatHistory();
                 });
+
                 chatList.appendChild(listItem);
             });
+
+            // Activar visualmente el chat correcto si existe
+            if (activeChatIndex !== -1 && chatList.children[activeChatIndex]) {
+                chatList.children[activeChatIndex].classList.add('active');
+            }
             saveChatHistory();
         }
-        
-        // Inicia una nueva conversación
-        function startNewChat() {
-            // Guarda la conversación actual antes de iniciar una nueva, si tiene contenido
-            if (activeChatIndex !== -1 && currentChatMessages.length > 0) {
-                chatHistory[activeChatIndex].messages = [...currentChatMessages];
-            } else if (activeChatIndex === -1 && currentChatMessages.length > 0) {
-                // Si es un chat nuevo sin guardar y tiene contenido, añádelo
-                const firstUserMsg = currentChatMessages.find(msg => msg.role === 'user');
-                const defaultTitle = firstUserMsg ? firstUserMsg.content.substring(0, 22) + (firstUserMsg.content.length > 22 ? '...' : '') : 'Nueva Conversación';
-                chatHistory.unshift({ title: defaultTitle, messages: [...currentChatMessages] });
-            }
-            
-            currentChatMessages = []; // Vacía los mensajes para la nueva conversación
-            activeChatIndex = -1; // No hay chat activo seleccionado en el historial
-            
-            // Aquí está el CAMBIO CLAVE: al iniciar un nuevo chat, siempre mostramos la pantalla de bienvenida
-            showInitialWelcomeScreen(); 
-            updateChatList(); // Para que ningún chat esté marcado como activo
-            saveChatHistory();
-            userInputField.value = ''; // Limpia el input
-            adjustTextareaHeight(); // Restablece la altura del textarea
-            hideLoadingIndicator(); // Asegura que el indicador de carga esté oculto
-            // No enfocar el input aquí, ya que el usuario debe hacer clic en "Empezar a chatear"
-        }
 
-        // Borra un chat del historial
-        function deleteChat(indexToDelete) {
-            if (confirm('¿Estás seguro de que quieres borrar este chat?')) {
-                // Si el chat activo es el que se va a borrar
-                if (activeChatIndex === indexToDelete) {
-                    activeChatIndex = -1; // Deseleccionar el chat activo
-                    currentChatMessages = []; // Vaciar el chat actual
-                    displayChat([]); // Mostrar el estado sin mensajes, lo que llevará a la welcome screen si no hay más chats
-                } else if (activeChatIndex > indexToDelete) {
-                    // Si el chat activo está después del que se borra, ajustar el índice
-                    activeChatIndex--;
-                }
-                
-                chatHistory.splice(indexToDelete, 1); // Eliminar del array
-                saveChatHistory();
-                updateChatList(); // Actualizar la UI
-                // Si no quedan chats después de borrar, también muestra la bienvenida
-                if (chatHistory.length === 0 && activeChatIndex === -1) {
-                    showInitialWelcomeScreen();
-                }
-            }
-        }
-
-        // Edita el título de un chat
         function editChatTitle(index, listItem) {
-            const titleSpan = listItem.querySelector('.chat-title-text');
+            const currentTitleElement = listItem.querySelector('.chat-title-text');
             const currentTitle = chatHistory[index].title;
 
-            // Crear un input de edición
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.classList.add('edit-title-input');
-            input.value = currentTitle;
+            // Crear el input de edición
+            const inputField = document.createElement('input');
+            inputField.type = 'text';
+            inputField.classList.add('edit-title-input');
+            inputField.value = currentTitle;
+            inputField.maxLength = 50; // Limitar longitud
 
-            // Reemplazar el span con el input
-            titleSpan.replaceWith(input);
-            input.focus();
-            input.select(); // Seleccionar todo el texto
+            // Reemplazar el título con el input
+            currentTitleElement.replaceWith(inputField);
+
+            // Ocultar acciones mientras se edita
+            listItem.querySelector('.chat-actions').style.display = 'none';
+
+            inputField.focus();
+            inputField.select(); // Seleccionar todo el texto para facilitar la edición
 
             const saveTitle = () => {
-                let newTitle = input.value.trim();
-                if (newTitle === '') {
-                    newTitle = 'Conversación sin título'; // Título por defecto si se deja vacío
+                const newTitle = inputField.value.trim();
+                if (newTitle && newTitle !== currentTitle) {
+                    chatHistory[index].title = newTitle;
+                    saveChatHistory();
+                    updateChatList(); // Re-renderizar la lista para aplicar el nuevo título
+                } else {
+                    // Si el título está vacío o no ha cambiado, restaurar el original
+                    inputField.replaceWith(currentTitleElement);
+                    listItem.querySelector('.chat-actions').style.display = 'flex'; // Mostrar acciones de nuevo
                 }
-                chatHistory[index].title = newTitle;
-                saveChatHistory();
-                updateChatList(); // Redibujar la lista para mostrar el nuevo título
             };
 
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    input.blur(); // Dispara el evento 'blur'
+            inputField.addEventListener('blur', saveTitle); // Guardar al perder el foco
+            inputField.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Evitar salto de línea en el input
+                    saveTitle();
                 }
             });
-
-            input.addEventListener('blur', saveTitle); // Guardar cuando se pierde el foco
         }
 
+        function deleteChat(index) {
+            if (confirm('¿Estás seguro de que quieres borrar esta conversación?')) {
+                chatHistory.splice(index, 1); // Eliminar el chat del historial
+                saveChatHistory(); // Guardar cambios
 
-        // Muestra/oculta el indicador de carga
-        function showLoadingIndicator() {
-            if (loadingIndicator) {
-                loadingIndicator.style.display = 'flex';
-                // Posicionar el indicador de carga en relación al input-area
-                const inputAreaRect = document.querySelector('.input-area').getBoundingClientRect();
-                loadingIndicator.style.bottom = `${window.innerHeight - inputAreaRect.top + 10}px`;
-                loadingIndicator.style.right = `20px`;
-                loadingIndicator.style.position = 'fixed';
+                if (activeChatIndex === index) {
+                    // Si el chat borrado era el activo, iniciar una nueva conversación
+                    startNewChat();
+                } else if (activeChatIndex > index) {
+                    // Si el chat activo estaba después del borrado, ajustar el índice
+                    activeChatIndex--;
+                    updateChatList(); // Re-renderizar la lista para actualizar los índices visuales
+                    // Si después de ajustar, el chat activo sigue existiendo, activar visualmente
+                    if (activeChatIndex !== -1) {
+                         chatList.children[activeChatIndex].classList.add('active');
+                    }
+                } else {
+                    updateChatList(); // Simplemente re-renderizar la lista
+                }
             }
-            sendButton.disabled = true;
-            userInputField.disabled = true;
         }
 
-        function hideLoadingIndicator() {
-            if (loadingIndicator) loadingIndicator.style.display = 'none';
-            sendButton.disabled = false;
-            userInputField.disabled = false;
-            userInputField.focus();
+        function loadChat(index) {
+            // Desactivar visualmente el chat anterior
+            if (activeChatIndex !== -1 && chatList.children[activeChatIndex]) {
+                chatList.children[activeChatIndex].classList.remove('active');
+            }
+
+            activeChatIndex = index;
+            currentChatMessages = [...chatHistory[index].messages]; // Clonar para evitar mutación directa
+            displayChat(currentChatMessages); // Mostrar los mensajes del chat cargado
+            chatList.children[activeChatIndex].classList.add('active'); // Activar visualmente el nuevo chat
+            saveChatHistory(); // Guardar el índice activo
+            localStorage.setItem('amside_last_active_chat', index); // Guardar el último chat activo
         }
 
-        // Muestra la pantalla de bienvenida (ocultando el input centrado y el chat normal)
+        function startNewChat() {
+            // Ocultar la pantalla de bienvenida si está visible
+            welcomeScreen.classList.add('hidden');
+            // Asegurarse de que el chat-container no tenga las clases de centrado/bienvenida
+            chatContainer.classList.remove('centered-input', 'welcome-active');
+
+            // Desactivar visualmente el chat anterior
+            if (activeChatIndex !== -1 && chatList.children[activeChatIndex]) {
+                chatList.children[activeChatIndex].classList.remove('active');
+            }
+
+            currentChatMessages = []; // Vaciar mensajes de la conversación actual
+            chatMessages.innerHTML = ''; // Limpiar la interfaz de chat
+
+            // Crear un nuevo chat en el historial
+            const newChatEntry = {
+                title: 'Nueva Conversación',
+                messages: []
+            };
+            chatHistory.push(newChatEntry);
+            activeChatIndex = chatHistory.length - 1; // El nuevo chat es el activo
+
+            updateChatList(); // Actualizar la lista del sidebar
+            saveChatHistory(); // Guardar el historial actualizado
+
+            // Mostrar el input en el centro y ocultar el chat-body
+            hideChatContent(); 
+            userInputField.focus(); // Enfocar el campo de entrada
+            localStorage.setItem('amside_last_active_chat', activeChatIndex); // Guardar el último chat activo
+
+             // Marcar como primera visita completada
+            localStorage.setItem('amside_first_visit_done', 'true');
+        }
+
         function showInitialWelcomeScreen() {
             welcomeScreen.classList.remove('hidden');
-            chatContainer.classList.add('no-messages'); // Oculta header y chat-body
-            chatContainer.classList.remove('input-centered'); // Asegura que el input centrado NO esté visible
+            chatContainer.classList.add('welcome-active'); // Añade una clase para controlar el estado del chat-container
+            chatContainer.classList.remove('centered-input'); // Asegura que no esté en modo input centrado
+            // También oculta el input-area por si acaso
+            inputArea.style.display = 'none'; 
         }
 
-        // Oculta la pantalla de bienvenida (preparando para mostrar el input centrado o el chat normal)
-        function hideInitialWelcomeScreen() {
+        function hideWelcomeScreen() {
             welcomeScreen.classList.add('hidden');
-            // Cuando la bienvenida se oculta, no automáticamente mostramos el input centrado aquí.
-            // Dependerá de si hay mensajes en el chat o no.
+            chatContainer.classList.remove('welcome-active'); // Elimina la clase de estado de bienvenida
+            // Muestra el input-area si no hay mensajes y debe estar centrado
+            if (currentChatMessages.length === 0) {
+                 hideChatContent();
+            } else {
+                showChatContent();
+            }
         }
 
-        // Muestra el chat-body y el input-area en su posición normal (arriba/abajo)
         function showChatContent() {
-            hideInitialWelcomeScreen(); // Asegura que la pantalla de bienvenida no esté
-            chatContainer.classList.remove('no-messages'); // Muestra header y chat-body
-            chatContainer.classList.remove('input-centered'); // Asegura que el input NO esté centrado
-            chatMessages.style.display = 'flex'; // Asegura que el chat-body esté visible
-            inputArea.style.display = 'flex'; // Muestra el input-area
-            inputArea.style.position = 'relative'; // Vuelve el input-area a su posición normal
-            inputArea.style.top = 'unset';
-            inputArea.style.left = 'unset';
-            inputArea.style.transform = 'none';
+            welcomeScreen.classList.add('hidden');
+            chatContainer.classList.remove('welcome-active', 'centered-input');
+            chatHeader.style.display = 'flex'; // Asegúrate de que el header se muestre
+            chatMessages.style.display = 'flex'; // Asegúrate de que el chat-body se muestre
+            inputArea.style.display = 'flex'; // Asegúrate de que el input-area se muestre en modo normal
+            inputArea.classList.remove('centered-input-style'); // Elimina la clase de centrado del input-area
+            inputArea.style.position = 'static'; // Restaura la posición normal
+            inputArea.style.transform = 'none'; // Restaura la transformación
             inputArea.style.width = 'auto';
             inputArea.style.maxWidth = 'none';
             inputArea.style.flexDirection = 'row';
             inputArea.style.gap = 'initial';
             inputArea.style.padding = '15px';
-            inputArea.style.borderTop = '1px solid #444d57'; /* Vuelve a poner el borde superior */
+            inputArea.style.border = 'none';
             inputArea.style.backgroundColor = 'var(--secondary-color)';
         }
 
-        // Oculta el chat-body, el header y muestra el input-area centrado (si la welcome screen está oculta)
         function hideChatContent() {
-            hideInitialWelcomeScreen(); // Asegura que la welcome screen está oculta
-            chatContainer.classList.add('no-messages'); // Oculta header y chat-body
-            chatContainer.classList.add('input-centered'); // Activa la clase para centrar el input
+            welcomeScreen.classList.add('hidden'); // Siempre ocultar bienvenida
+            chatContainer.classList.remove('welcome-active'); // No está en estado de bienvenida
+            chatContainer.classList.add('centered-input'); // Activa el estilo para el input centrado
+            chatHeader.style.display = 'none'; // Oculta el header
+            chatMessages.style.display = 'none'; // Oculta el chat-body
+            inputArea.style.display = 'flex'; // Asegura que el input-area se muestre
+            // Las propiedades de posicionamiento para centrar el input-area se manejan por CSS en `.chat-container.centered-input .input-area`
         }
 
+        // Desplaza el chat al final para ver los mensajes más recientes
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
 
-        // --- Función principal para enviar mensajes ---
+        // Ajusta la altura del textarea dinámicamente
+        function adjustTextareaHeight() {
+            userInputField.style.height = 'auto'; // Reset height
+            userInputField.style.height = userInputField.scrollHeight + 'px';
+        }
+
+        // Envía el mensaje al backend
         async function sendMessage() {
-            const userInput = userInputField.value.trim();
-            if (userInput === "") return;
+            const userMessage = userInputField.value.trim();
+            if (userMessage === '') return;
 
-            // Si es la primera interacción en un nuevo chat (currentChatMessages está vacío)
-            if (currentChatMessages.length === 0) {
-                // Al enviar el primer mensaje desde la pantalla de bienvenida (input centrado),
-                // transicionamos a la vista de chat normal.
-                hideInitialWelcomeScreen();
-                showChatContent(); // Cambia a la vista de chat normal
-                
-                // Añadir el mensaje de bienvenida de la IA al iniciar el chat
-                currentChatMessages.push({ role: 'assistant', content: 'Bienvenido a Amside AI. Estoy aquí para ayudarte. ¿Qué te gustaría saber?' });
-                addMessageToChat('assistant', 'Bienvenido a Amside AI. Estoy aquí para ayudarte. ¿Qué te gustaría saber?');
+            // Si es una nueva conversación sin mensajes, la pantalla de bienvenida está oculta
+            // y el input está centrado, necesitamos mover el input a su posición normal
+            // y mostrar el chat-body y el header.
+            if (currentChatMessages.length === 0 && chatContainer.classList.contains('centered-input')) {
+                showChatContent();
             }
-            
-            addMessageToChat('user', userInput);
-            currentChatMessages.push({ role: 'user', content: userInput });
-            userInputField.value = "";
-            adjustTextareaHeight(); // Restablece la altura del textarea
 
+            addMessageToChat('user', userMessage);
+            currentChatMessages.push({ role: 'user', content: userMessage });
+            userInputField.value = '';
+            adjustTextareaHeight();
+            sendButton.disabled = true;
+            loadingIndicator.style.display = 'flex'; // Mostrar indicador de carga
+            scrollToBottom();
 
-            showLoadingIndicator();
+            // Si es el primer mensaje de una nueva conversación, genera un título
+            if (currentChatMessages.length === 1 && activeChatIndex !== -1 && chatHistory[activeChatIndex].title === 'Nueva Conversación') {
+                chatHistory[activeChatIndex].title = userMessage.substring(0, 22) + (userMessage.length > 22 ? '...' : '');
+                updateChatList(); // Actualiza la lista para que el nuevo título aparezca
+            }
 
             try {
-                const payload = {
-                    "messages": currentChatMessages
-                };
-
                 const response = await fetch(API_CHAT_ENDPOINT, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(payload),
+                    body: JSON.stringify({ messages: currentChatMessages }),
                 });
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.error || `Error HTTP: ${response.status} - ${JSON.stringify(errorData)}`);
+                    throw new Error(errorData.error || 'Error al comunicarse con la IA. Inténtalo de nuevo más tarde.');
                 }
 
                 const data = await response.json();
-                const aiResponseText = data.response;
-
-                addMessageToChat('assistant', aiResponseText);
-                currentChatMessages.push({ role: 'assistant', content: aiResponseText });
-
-                // Lógica para guardar o actualizar el chat en el historial
-                if (activeChatIndex === -1) {
-                    // Nuevo chat: Asignar un título y agregarlo al inicio del historial
-                    const firstUserMessage = currentChatMessages.find(msg => msg.role === 'user');
-                    const defaultTitle = firstUserMessage ? firstUserMessage.content.substring(0, 22) + (firstUserMessage.content.length > 22 ? '...' : '') : 'Nueva Conversación';
-                    chatHistory.unshift({ title: defaultTitle, messages: [...currentChatMessages] });
-                    activeChatIndex = 0; // El nuevo chat es ahora el activo
-                } else {
-                    // Chat existente: Actualizar sus mensajes
-                    chatHistory[activeChatIndex].messages = [...currentChatMessages];
-                }
-                saveChatHistory();
-                updateChatList(); // Asegurarse de que la lista se actualice y el chat activo se resalte
-                scrollToBottom();
+                addMessageToChat('assistant', data.response);
+                currentChatMessages.push({ role: 'assistant', content: data.response });
 
             } catch (error) {
-                console.error("Error al obtener respuesta de la IA:", error);
-                addMessageToChat('error', `Lo siento, no pude obtener una respuesta. Error: ${error.message}`);
+                console.error('Error al enviar mensaje:', error);
+                addMessageToChat('error', `Error: ${error.message}`);
             } finally {
-                hideLoadingIndicator();
+                sendButton.disabled = false;
+                loadingIndicator.style.display = 'none'; // Ocultar indicador de carga
+                scrollToBottom();
+                saveChatHistory(); // Guardar el historial después de cada interacción
             }
         }
 
-        // Ajustar altura del textarea dinámicamente
-        function adjustTextareaHeight() {
-            userInputField.style.height = 'auto'; // Restablece la altura para calcular correctamente
-            userInputField.style.height = userInputField.scrollHeight + 'px';
-        }
+        // --- Event Listeners ---
+        sendButton.addEventListener('click', sendMessage);
+        userInputField.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) { // Enviar con Enter, salto de línea con Shift + Enter
+                event.preventDefault(); // Evitar el salto de línea por defecto
+                sendMessage();
+            }
+        });
+        userInputField.addEventListener('input', adjustTextareaHeight);
 
-        // --- Event Listeners (para interacciones del usuario) ---
-        if (sendButton) {
-            sendButton.addEventListener('click', sendMessage);
-        }
-        if (userInputField) {
-            userInputField.addEventListener('input', adjustTextareaHeight); // Ajusta la altura al escribir
-            userInputField.addEventListener('keypress', (event) => {
-                if (event.key === 'Enter' && !event.shiftKey) { // Enter para enviar, Shift+Enter para nueva línea
-                    event.preventDefault(); // Previene la nueva línea por defecto
-                    sendMessage();
-                }
-            });
-        }
-        if (newChatButtonSidebar) {
-            newChatButtonSidebar.addEventListener('click', startNewChat);
-        }
-        if (newChatButtonHeader) {
-            newChatButtonHeader.addEventListener('click', startNewChat);
-        }
-        if (startChatFromWelcomeButton) {
-            startChatFromWelcomeButton.addEventListener('click', () => {
-                // Al hacer clic en "Empezar a chatear" desde la bienvenida,
-                // ocultamos la bienvenida y mostramos el input centrado.
-                hideInitialWelcomeScreen(); 
-                hideChatContent(); // Esto hace visible el input centrado
-                userInputField.focus(); // Enfoca el input
-            });
-        }
+        newChatButtonSidebar.addEventListener('click', startNewChat);
+        newChatButtonHeader.addEventListener('click', startNewChat);
 
+        startChatFromWelcomeButton.addEventListener('click', () => {
+            hideWelcomeScreen();
+            startNewChat(); // Inicia una nueva conversación real al hacer clic
+        });
 
-        // Desplaza el chat hacia abajo automáticamente
-        function scrollToBottom() {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+        // --- Inicialización ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadChatHistory();
+            const lastActiveChatIndex = localStorage.getItem('amside_last_active_chat');
 
-        // --- Inicialización de la aplicación al cargar la página ---
-        loadChatHistory();
-        if (chatHistory.length > 0) {
-            activeChatIndex = 0; // Carga el chat más reciente como activo
-            currentChatMessages = chatHistory[activeChatIndex].messages;
-            displayChat(currentChatMessages); // Esto mostrará el chat normal
-            hideInitialWelcomeScreen(); // Asegura que la pantalla de bienvenida esté oculta
-            showChatContent(); // Asegura que el chat normal esté visible
-        } else {
-            // Si no hay historial, muestra la pantalla de bienvenida y el input-area se oculta por CSS
-            currentChatMessages = []; // Asegura que el chat esté vacío
-            activeChatIndex = -1; // No hay chat activo
-            showInitialWelcomeScreen(); // Muestra la pantalla de bienvenida
-        }
+            if (chatHistory.length === 0 && !localStorage.getItem('amside_first_visit_done')) {
+                // Si no hay historial y es la primera visita, mostrar pantalla de bienvenida
+                showInitialWelcomeScreen();
+            } else if (lastActiveChatIndex !== null && chatHistory[parseInt(lastActiveChatIndex)]) {
+                // Cargar el último chat activo si existe
+                loadChat(parseInt(lastActiveChatIndex));
+            } else if (chatHistory.length > 0) {
+                // Si hay historial pero no un último chat activo válido, cargar el último de la lista
+                loadChat(chatHistory.length - 1);
+            } else {
+                // Si no hay historial pero ya se visitó (se borró el historial, etc.), centrar el input para empezar
+                startNewChat(); // Esto llamará a hideChatContent internamente
+            }
+        });
     </script>
 </body>
 </html>
