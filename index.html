@@ -60,15 +60,26 @@
         }
 
         .sidebar-header .icon {
-            font-size: 2.2em; /* Tamaño del ícono */
+            font-size: 2.5em; /* Tamaño del ícono, un poco más grande */
             color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(var(--accent-color-rgb), 0.7); /* Efecto neón más marcado */
+            position: relative;
+            animation: pulse-icon 1.5s infinite alternate; /* Animación de pulso */
         }
 
         .sidebar-header h2 {
             margin: 0;
-            font-size: 1.9em; /* Fuente más grande */
+            font-size: 2em; /* Fuente más grande */
             font-weight: 700; /* Más audaz */
-            text-shadow: 0 0 5px rgba(var(--accent-color-rgb), 0.5); /* Efecto neón suave */
+            background: linear-gradient(45deg, var(--accent-color), #00e5ff); /* Degradado en el texto */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 8px rgba(var(--accent-color-rgb), 0.6); /* Sombra para el texto */
+        }
+
+        @keyframes pulse-icon {
+            from { transform: scale(1); opacity: 1; }
+            to { transform: scale(1.05); opacity: 0.9; }
         }
 
         /* Estilo del botón "Nueva Conversación" */
@@ -88,6 +99,7 @@
             align-items: center;
             justify-content: flex-start;
             font-weight: 500;
+            box-shadow: 0 4px 10px rgba(var(--accent-color-rgb), 0.3);
         }
 
         .new-chat-button .material-symbols-outlined {
@@ -98,6 +110,7 @@
         .new-chat-button:hover {
             background-color: var(--accent-color-hover);
             transform: translateY(-2px); /* Pequeño efecto de elevación */
+            box-shadow: 0 6px 15px rgba(var(--accent-color-rgb), 0.4);
         }
 
         /* Título del historial de chat */
@@ -152,12 +165,25 @@
             white-space: nowrap;
             display: flex;
             align-items: center;
+            justify-content: space-between; /* Para separar el texto de los íconos */
             gap: 8px; /* Espacio para el ícono de chat */
+            position: relative; /* Para posicionar los íconos de acción */
         }
-        
+
+        .chat-list li .chat-title-content {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .chat-list li .material-symbols-outlined {
             font-size: 1.1em;
             color: var(--text-color-secondary);
+            flex-shrink: 0;
         }
 
         .chat-list li:hover {
@@ -180,6 +206,53 @@
 
         .chat-list li.active .material-symbols-outlined {
             color: var(--text-color-primary);
+        }
+
+        /* Estilos para los íconos de acción (editar/borrar) */
+        .chat-list li .chat-actions {
+            display: none; /* Ocultos por defecto */
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        .chat-list li:hover .chat-actions,
+        .chat-list li.active .chat-actions { /* Mostrar también cuando está activo */
+            display: flex;
+        }
+
+        .chat-list li .chat-actions .material-symbols-outlined {
+            font-size: 1em;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 5px;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .chat-list li .chat-actions .material-symbols-outlined:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+        
+        .chat-list li .chat-actions .material-symbols-outlined.delete-icon:hover {
+            color: var(--error-color);
+            background-color: rgba(244, 67, 54, 0.2);
+        }
+        
+        .chat-list li .chat-actions .material-symbols-outlined.edit-icon:hover {
+            color: #ffeb3b; /* Amarillo para editar */
+            background-color: rgba(255, 235, 59, 0.2);
+        }
+
+        /* Estilo para el input de edición del título */
+        .chat-list li .edit-title-input {
+            background-color: #444d57;
+            border: 1px solid var(--accent-color);
+            color: var(--text-color-primary);
+            border-radius: 5px;
+            padding: 5px 8px;
+            font-size: 1em;
+            flex-grow: 1;
+            margin-right: 5px;
+            outline: none;
         }
 
 
@@ -394,19 +467,19 @@
             background-color: var(--accent-color);
             color: var(--text-color-primary);
             border: none;
-            padding: 12px 18px; /* Más padding */
+            padding: 10px 15px; /* Menos padding para hacerlo más pequeño */
             border-radius: var(--border-radius);
             cursor: pointer;
-            font-size: 1em;
+            font-size: 0.9em; /* Fuente más pequeña */
             transition: background-color var(--transition), transform 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px; /* Menos espacio */
             font-weight: 500;
         }
 
         .send-button .material-symbols-outlined {
-            font-size: 1.2em;
+            font-size: 1.1em; /* Ajustar tamaño del ícono */
         }
 
         .send-button:hover {
@@ -465,32 +538,6 @@
             line-height: 1.6;
         }
 
-        .welcome-screen .start-button {
-            background-color: var(--accent-color);
-            color: var(--text-color-primary);
-            border: none;
-            padding: 15px 30px;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-size: 1.3em;
-            font-weight: 700;
-            transition: background-color var(--transition), transform 0.2s ease, box-shadow var(--transition);
-            box-shadow: 0 4px 15px rgba(var(--accent-color-rgb), 0.4);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .welcome-screen .start-button .material-symbols-outlined {
-            font-size: 1.5em;
-        }
-
-        .welcome-screen .start-button:hover {
-            background-color: var(--accent-color-hover);
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 6px 20px rgba(var(--accent-color-rgb), 0.6);
-        }
-
         /* --- Estilo para el input-area centrado (cuando no hay mensajes) --- */
         .chat-container.no-messages .chat-body {
             display: none; /* Oculta el chat-body cuando no hay mensajes */
@@ -534,7 +581,7 @@
 <body>
     <div class="sidebar">
         <div class="sidebar-header">
-            <span class="material-symbols-outlined icon">chat_spark</span>
+            <span class="material-symbols-outlined icon">auto_awesome</span> 
             <h2>Amside AI</h2>
         </div>
         <button class="new-chat-button" id="new-chat-button">
@@ -555,10 +602,9 @@
         </div>
         
         <div class="welcome-screen" id="welcome-screen">
-            <span class="material-symbols-outlined" style="font-size: 6em; color: var(--accent-color); margin-bottom: 20px; text-shadow: 0 0 15px rgba(var(--accent-color-rgb), 0.8);">auto_awesome</span>
-            <h1>Bienvenido a Amside AI</h1>
+            <span class="material-symbols-outlined" style="font-size: 6em; color: var(--accent-color); margin-bottom: 20px; text-shadow: 0 0 15px rgba(var(--accent-color-rgb), 0.8);">psychology</span> <h1>Bienvenido a Amside AI</h1>
             <p>Estoy aquí para ayudarte. ¿En qué puedo asistirte hoy? ¡Escribe tu primer mensaje para empezar!</p>
-            </div>
+        </div>
 
         <div class="chat-body" id="chat-messages">
             </div>
@@ -593,11 +639,12 @@
         const newChatButtonHeader = document.getElementById('new-conversation-header-button');
         const loadingIndicator = document.getElementById('loading-indicator');
         const welcomeScreen = document.getElementById('welcome-screen');
-        const inputArea = document.querySelector('.input-area'); // Añadir referencia al input-area
+        const inputArea = document.querySelector('.input-area'); 
 
         // Almacena mensajes en formato ChatML { role: "user/assistant/system", content: "..." }
         let currentChatMessages = []; // Mensajes de la conversación actual
         let chatHistory = []; // Para guardar múltiples conversaciones en la lista de la izquierda
+        let activeChatIndex = -1; // Índice del chat activo en chatHistory
 
         // --- Funciones para la persistencia del chat usando localStorage ---
         function loadChatHistory() {
@@ -664,33 +711,53 @@
             chatList.innerHTML = ''; // Limpiar la lista
             chatHistory.forEach((chat, index) => {
                 const listItem = document.createElement('li');
-                const firstUserMessage = chat.messages.find(msg => msg.role === 'user');
-                const chatTitle = firstUserMessage ? firstUserMessage.content.substring(0, 22) + (firstUserMessage.content.length > 22 ? '...' : '') : 'Nueva Conversación';
-                listItem.innerHTML = `<span class="material-symbols-outlined">chat</span> ${chatTitle}`;
+                listItem.dataset.index = index; // Guardar el índice para referencia
+
+                const chatTitleContent = document.createElement('div');
+                chatTitleContent.classList.add('chat-title-content');
+                chatTitleContent.innerHTML = `<span class="material-symbols-outlined">chat</span> <span class="chat-title-text">${chat.title}</span>`;
+                listItem.appendChild(chatTitleContent);
+
+                // Contenedor para los íconos de acción
+                const chatActions = document.createElement('div');
+                chatActions.classList.add('chat-actions');
+
+                const editIcon = document.createElement('span');
+                editIcon.classList.add('material-symbols-outlined', 'edit-icon');
+                editIcon.textContent = 'edit';
+                editIcon.title = 'Editar título';
+                editIcon.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Evita que se active la carga del chat
+                    editChatTitle(index, listItem);
+                });
+                chatActions.appendChild(editIcon);
+
+                const deleteIcon = document.createElement('span');
+                deleteIcon.classList.add('material-symbols-outlined', 'delete-icon');
+                deleteIcon.textContent = 'delete';
+                deleteIcon.title = 'Borrar chat';
+                deleteIcon.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Evita que se active la carga del chat
+                    deleteChat(index);
+                });
+                chatActions.appendChild(deleteIcon);
                 
-                // Un pequeño truco para comparar arrays: comparar si el contenido de los mensajes es el mismo
-                const isActive = JSON.stringify(chat.messages) === JSON.stringify(currentChatMessages);
-                if (isActive) {
+                listItem.appendChild(chatActions);
+
+                if (index === activeChatIndex) {
                     listItem.classList.add('active');
                 }
 
                 listItem.addEventListener('click', () => {
-                    // Guarda el chat que se está abandonando si tiene contenido
-                    const activeChatIndex = chatHistory.findIndex(chat => JSON.stringify(chat.messages) === JSON.stringify(currentChatMessages));
-                    if (activeChatIndex !== -1 && currentChatMessages.length > 0) { // Solo guarda si hay mensajes
+                    // Guarda el chat que se está abandonando
+                    if (activeChatIndex !== -1 && currentChatMessages.length > 0) {
                         chatHistory[activeChatIndex].messages = [...currentChatMessages];
-                    } else if (activeChatIndex === -1 && currentChatMessages.length > 0) {
-                         // Si es un chat nuevo sin guardar y tiene contenido, añádelo
-                        const firstUserMsg = currentChatMessages.find(msg => msg.role === 'user');
-                        if (firstUserMsg) {
-                            chatHistory.unshift({ messages: [...currentChatMessages] });
-                        }
                     }
-
-                    // Carga el nuevo chat
-                    currentChatMessages = chat.messages;
+                    
+                    activeChatIndex = index;
+                    currentChatMessages = chatHistory[activeChatIndex].messages;
                     displayChat(currentChatMessages);
-                    updateChatList();
+                    updateChatList(); // Para actualizar la clase 'active'
                     saveChatHistory();
                 });
                 chatList.appendChild(listItem);
@@ -701,27 +768,80 @@
         // Inicia una nueva conversación
         function startNewChat() {
             // Guarda la conversación actual antes de iniciar una nueva, si tiene contenido
-            if (currentChatMessages.length > 0) {
-                const activeChatIndex = chatHistory.findIndex(chat => JSON.stringify(chat.messages) === JSON.stringify(currentChatMessages));
-                if (activeChatIndex !== -1) {
-                    chatHistory[activeChatIndex].messages = [...currentChatMessages];
-                } else {
-                    const firstUserMsg = currentChatMessages.find(msg => msg.role === 'user');
-                    if (firstUserMsg) {
-                        chatHistory.unshift({ messages: [...currentChatMessages] });
-                    }
-                }
+            if (activeChatIndex !== -1 && currentChatMessages.length > 0) {
+                chatHistory[activeChatIndex].messages = [...currentChatMessages];
+            } else if (activeChatIndex === -1 && currentChatMessages.length > 0) {
+                // Si es un chat nuevo sin guardar y tiene contenido, añádelo
+                const firstUserMsg = currentChatMessages.find(msg => msg.role === 'user');
+                const defaultTitle = firstUserMsg ? firstUserMsg.content.substring(0, 22) + (firstUserMsg.content.length > 22 ? '...' : '') : 'Nueva Conversación';
+                chatHistory.unshift({ title: defaultTitle, messages: [...currentChatMessages] });
             }
             
             currentChatMessages = []; // Vacía los mensajes para la nueva conversación
+            activeChatIndex = -1; // No hay chat activo seleccionado en el historial
             displayChat(currentChatMessages); // Esto oculta el chat-body y centra el input
-            updateChatList();
+            updateChatList(); // Para que ningún chat esté marcado como activo
             saveChatHistory();
             userInputField.value = ''; // Limpia el input
             userInputField.style.height = 'auto'; // Restablece la altura del textarea
             hideLoadingIndicator(); // Asegura que el indicador de carga esté oculto
             userInputField.focus(); // Enfoca el input para empezar a escribir
         }
+
+        // Borra un chat del historial
+        function deleteChat(indexToDelete) {
+            if (confirm('¿Estás seguro de que quieres borrar este chat?')) {
+                // Si el chat activo es el que se va a borrar
+                if (activeChatIndex === indexToDelete) {
+                    activeChatIndex = -1; // Deseleccionar el chat activo
+                    currentChatMessages = []; // Vaciar el chat actual
+                    displayChat([]); // Mostrar el estado sin mensajes
+                } else if (activeChatIndex > indexToDelete) {
+                    // Si el chat activo está después del que se borra, ajustar el índice
+                    activeChatIndex--;
+                }
+                
+                chatHistory.splice(indexToDelete, 1); // Eliminar del array
+                saveChatHistory();
+                updateChatList(); // Actualizar la UI
+            }
+        }
+
+        // Edita el título de un chat
+        function editChatTitle(index, listItem) {
+            const titleSpan = listItem.querySelector('.chat-title-text');
+            const currentTitle = chatHistory[index].title;
+
+            // Crear un input de edición
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.classList.add('edit-title-input');
+            input.value = currentTitle;
+
+            // Reemplazar el span con el input
+            titleSpan.replaceWith(input);
+            input.focus();
+            input.select(); // Seleccionar todo el texto
+
+            const saveTitle = () => {
+                let newTitle = input.value.trim();
+                if (newTitle === '') {
+                    newTitle = 'Conversación sin título'; // Título por defecto si se deja vacío
+                }
+                chatHistory[index].title = newTitle;
+                saveChatHistory();
+                updateChatList(); // Redibujar la lista para mostrar el nuevo título
+            };
+
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    input.blur(); // Dispara el evento 'blur'
+                }
+            });
+
+            input.addEventListener('blur', saveTitle); // Guardar cuando se pierde el foco
+        }
+
 
         // Muestra/oculta el indicador de carga
         function showLoadingIndicator() {
@@ -769,7 +889,7 @@
             inputArea.style.flexDirection = 'row';
             inputArea.style.gap = 'initial';
             inputArea.style.padding = '15px';
-            inputArea.style.border = '1px solid #444d57'; /* Vuelve a poner el borde superior */
+            inputArea.style.borderTop = '1px solid #444d57'; /* Vuelve a poner el borde superior */
             inputArea.style.backgroundColor = 'var(--secondary-color)';
         }
 
@@ -824,16 +944,20 @@
                 addMessageToChat('assistant', aiResponseText);
                 currentChatMessages.push({ role: 'assistant', content: aiResponseText });
 
-                // Lógica para guardar el chat en el historial la primera vez que hay una interacción real
-                if (currentChatMessages.filter(msg => msg.role === 'user').length === 1 &&
-                    currentChatMessages.filter(msg => msg.role === 'assistant').length === 2) { // 2 porque el primero lo añadimos nosotros
+                // Lógica para guardar o actualizar el chat en el historial
+                if (activeChatIndex === -1) {
+                    // Nuevo chat: Asignar un título y agregarlo al inicio del historial
                     const firstUserMessage = currentChatMessages.find(msg => msg.role === 'user');
-                    if (firstUserMessage) {
-                        chatHistory.unshift({ messages: [...currentChatMessages] }); // Almacenar el array de mensajes directamente
-                        updateChatList();
-                    }
+                    const defaultTitle = firstUserMessage ? firstUserMessage.content.substring(0, 22) + (firstUserMessage.content.length > 22 ? '...' : '') : 'Nueva Conversación';
+                    chatHistory.unshift({ title: defaultTitle, messages: [...currentChatMessages] });
+                    activeChatIndex = 0; // El nuevo chat es ahora el activo
+                } else {
+                    // Chat existente: Actualizar sus mensajes
+                    chatHistory[activeChatIndex].messages = [...currentChatMessages];
                 }
                 saveChatHistory();
+                updateChatList(); // Asegurarse de que la lista se actualice y el chat activo se resalte
+                scrollToBottom();
 
             } catch (error) {
                 console.error("Error al obtener respuesta de la IA:", error);
@@ -877,12 +1001,14 @@
         // --- Inicialización de la aplicación al cargar la página ---
         loadChatHistory();
         if (chatHistory.length > 0) {
-            currentChatMessages = chatHistory[0].messages; // Carga el chat más reciente
+            activeChatIndex = 0; // Carga el chat más reciente como activo
+            currentChatMessages = chatHistory[activeChatIndex].messages;
             displayChat(currentChatMessages); // Esto mostrará el chat normal
             hideInitialWelcomeScreen(); // Asegura que la pantalla de bienvenida esté oculta
         } else {
             // Si no hay historial, muestra la pantalla de bienvenida y el input centrado
             currentChatMessages = []; // Asegura que el chat esté vacío
+            activeChatIndex = -1; // No hay chat activo
             showInitialWelcomeScreen(); // Muestra la pantalla de bienvenida
             hideChatContent(); // Oculta el chat-body y centra el input
             userInputField.focus(); // Enfoca el input
